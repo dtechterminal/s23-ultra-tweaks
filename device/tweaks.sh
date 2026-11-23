@@ -853,7 +853,9 @@ apply)
   has features && ff_tags="$ff_tags SETTINGS_SUPPORT_AUTO_POWER_ON_OFF AUDIO_SUPPORT_VOIP_SOUND_LOUDER"
   if has display; then  # Vividness slider (Screen mode > Advanced settings) and full-screen AOD wallpaper
     ff_set LCD_CONFIG_VIVIDNESS 1; ff_set LCD_CONFIG_VIVIDPLUS 1
-    ff_set LCD_CONFIG_AOD_FULLSCREEN 1; ff_set LCD_CONFIG_AOD_BRIGHTNESS_ANIMATION 1
+    ff_set LCD_CONFIG_AOD_FULLSCREEN 1
+    # Not the S24's LCD_CONFIG_AOD_BRIGHTNESS_ANIMATION: on the S23 the AOD wallpaper then stays
+    # bright for a few seconds and drops sharply, instead of dimming smoothly
   fi
   if has logvideo; then
     ff_set CAMERA_CONFIG_LOG_VIDEO V1.0; ff_set GALLERY_SUPPORT_LOG_CORRECT_COLOR TRUE

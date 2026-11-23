@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **AOD wallpaper brightness** (`display`): the lock screen wallpaper on Always On Display showed bright for a few seconds and then dropped sharply. The tweak no longer sets the S24's `LCD_CONFIG_AOD_BRIGHTNESS_ANIMATION`; only `LCD_CONFIG_AOD_FULLSCREEN` turns the wallpaper on. Not yet tested on a phone.
+
 ## v1.2.2
 
 - **Every tweak says why it can't run.** The module page shows the reason for each unavailable tweak (before, Camera HDR, Galaxy AI, Settings search, the carrier tweaks and the camera-config tweaks could be offered and then skip silently). Apply logs `<tweak>: skipped: <reason>` and carries on with the rest (an unsupported kernel no longer stops the whole apply at AirDrop), and the log ends with `on:` / `not on:`.

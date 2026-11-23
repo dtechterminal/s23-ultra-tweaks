@@ -956,7 +956,7 @@ function installMock() {
     if (has("india")) add(0.5, "india: INS carrier config on (sales code stays XAC)");
     else if (has("callrec")) add(0.5, "callrec: call recording on (Phone app > Settings > Record calls)");
     if (fail) { add(0.4, "restarting the Android framework (screen goes black for ~30 s)"); add(2.0, "FAILED: something went wrong in the mock (framework did not come back)"); return out; }
-    if (has("display") || has("logvideo")) add(0.4, "feature flags on: " + (has("display") ? "LCD_CONFIG_VIVIDNESS LCD_CONFIG_VIVIDPLUS LCD_CONFIG_AOD_FULLSCREEN LCD_CONFIG_AOD_BRIGHTNESS_ANIMATION " : "") + (has("logvideo") ? "CAMERA_CONFIG_LOG_VIDEO GALLERY_SUPPORT_LOG_CORRECT_COLOR" : ""));
+    if (has("display") || has("logvideo")) add(0.4, "feature flags on: " + (has("display") ? "LCD_CONFIG_VIVIDNESS LCD_CONFIG_VIVIDPLUS LCD_CONFIG_AOD_FULLSCREEN " : "") + (has("logvideo") ? "CAMERA_CONFIG_LOG_VIDEO GALLERY_SUPPORT_LOG_CORRECT_COLOR" : ""));
     for (const t of ["airdrop", "camerahdr", "audioeraser", "colortone", "galaxyai", "settingssearch"]) if (has(t)) { add(0.8, t + ": downloading its files (" + t + "-S918WVLU8GZIF.tar.gz)"); add(0.2, t + ": files ready"); }
     if (has("camerahdr")) add(0.3, "camerahdr: One UI 6 multi-frame HDR and low-light HDR on");
     if (has("audioeraser")) add(0.5, "audioeraser: S24 video editor engine, sound-separation libraries and models on");
