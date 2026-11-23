@@ -56,7 +56,8 @@ k_ok=0; for f in $AIRDROP_FW; do [ "$kernel" = "$AIRDROP_KBASE$f" ] && k_ok=1; d
 [ $k_ok = 1 ] || { can_airdrop=0; why_airdrop="needs firmware ${AIRDROP_FW// /, } (this phone runs $build)"; }
 [ "${gms:-0}" -ge 261125000 ] || { can_airdrop=0; why_airdrop="needs Google Play services 26.11 or newer"; }
 can_csc=1; why_csc=""; [ "$csc" = XAC ] || { can_csc=0; why_csc="needs XAC (Canadian) firmware"; }
-can_ct=1; why_ct=""; [ "$build" = S918WVLU8GZIF ] || { can_ct=0; why_ct="needs firmware S918WVLU8GZIF (it patches that build's Settings app)"; }
+can_rec=$can_csc; why_rec="needs XAC (Canadian) or EUX (European) firmware"; [ "$csc $build" = "EUX S918BXXUAGZIF" ] && can_rec=1   # CALLREC_CSC in device/tweaks.sh
+can_ct=1; why_ct=""; case "$build" in S918WVLU8GZIF|S918BXXUAGZIF) ;; *) can_ct=0; why_ct="needs firmware S918WVLU8GZIF or S918BXXUAGZIF (it patches that build's Settings app)" ;; esac   # SETTINGS_EAD in device/tweaks.sh
 # an Indian SIM (MCC 404/405) makes the carrier picks take the India config instead of plain call recording
 sim=$(sh_ getprop gsm.sim.operator.numeric | cut -d, -f1); sim_india=0; carrier_skip=india
 case "$sim" in 404*|405*) sim_india=1; carrier_skip=callrec ;; esac
@@ -76,7 +77,7 @@ ids=(airdrop wifi7 hotspot6g
      callrec india)
 cat=(A A A  B B B B  C C C  D D D D D  E E  F F)
 cats=(A B C D E F)
-catname=("Connectivity" "Camera" "Display and graphics" "Galaxy AI and Samsung apps" "Battery and settings" "Carrier (XAC firmware only)")
+catname=("Connectivity" "Camera" "Display and graphics" "Galaxy AI and Samsung apps" "Battery and settings" "Carrier (XAC or EUX firmware)")
 desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Google's Mosey; 20 MB download)"
       "Wi-Fi 7 multi-link (MLO) with Wi-Fi 7 routers: S24 wpa_supplicant + driver MLO settings (adds AirDrop)"
       "6 GHz hotspot: Mobile Hotspot > Band offers 6 GHz (Wi-Fi 6E, 160 MHz)"
@@ -96,8 +97,8 @@ desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Googl
       "Extra settings: Auto power on/off schedule, louder VoIP calls"
       "Call recording in the Samsung Phone app"
       "India carrier config for Airtel/Jio SIMs: 'Use 5G standalone networks' switch, call recording, Smart IVR, message cards; sales code stays XAC")
-avail=($can_airdrop $can_airdrop 1  1 1 1 1  1 $can_ct 1  1 1 1 $can_lc 1  1 1  $can_csc $can_csc)
-why=("$why_airdrop" "$why_airdrop" ""  "" "" "" ""  "" "$why_ct" ""  "" "" "" "$why_lc" ""  "" ""  "$why_csc" "$why_csc")
+avail=($can_airdrop $can_airdrop 1  1 1 1 1  1 $can_ct 1  1 1 1 $can_lc 1  1 1  $can_rec $can_csc)
+why=("$why_airdrop" "$why_airdrop" ""  "" "" "" ""  "" "$why_ct" ""  "" "" "" "$why_lc" ""  "" ""  "$why_rec" "$why_csc")
 
 # pre-release builds lived in /data/local/tmp/s23tweaks: carry the picks and the Play services backup over
 sh_ "su -c '[ -d /data/local/tmp/s23tweaks ] && [ ! -e $PHONE_DIR/choices ] && mkdir -p $PHONE_DIR && cp -r /data/local/tmp/s23tweaks/choices /data/local/tmp/s23tweaks/backup $PHONE_DIR/ 2>/dev/null; true'" >/dev/null

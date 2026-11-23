@@ -80,14 +80,23 @@ settingssearch settingssearch-S918WVLU8GZIF.tar.gz bddfa32a08def256b7497730a0e7f
 callscreen callscreen-S918WVLU8GZIF.tar.partaa 6a8d141557050e738b3a805d741463aae46b9322732bdd3039d836c0d116af9a
 callscreen callscreen-S918WVLU8GZIF.tar.partab 3335ea84794746040513e4297175736d792a19f378187d7b970c4058bc421025"
 SETTINGS=/system/priv-app/SecSettings/SecSettings.apk
-SETTINGS_STOCK_MD5=5b8afa24f17e090d57380b8ebbd3dcee   # SecSettings.apk on S918WVLU8GZIF
-SETTINGS_EAD_MD5=f499f2e574a47eca0414f470e1ae20e8     # the same with files/SecSettings-ead.patch applied
+# colortone: firmware, md5 of its SecSettings.apk, md5 with files/SecSettings-ead-<firmware>.patch applied
+# (tools/eadpatch.py makes the patch and prints both for another firmware's APK)
+SETTINGS_EAD="S918WVLU8GZIF 5b8afa24f17e090d57380b8ebbd3dcee f499f2e574a47eca0414f470e1ae20e8
+S918BXXUAGZIF 5b20b1a68f94d01bba5a776e15ffdc30 de6d142d238849198810dfe70fada8dd"
+ead_row() { echo "$SETTINGS_EAD" | awk -v b="$(getprop ro.build.PDA)" '$1 == b'; }
+ead_builds() { echo "$SETTINGS_EAD" | awk '{print $1}' | tr '\n' ' ' | sed 's/ $//; s/ / or /g'; }
 XAC=/optics/configs/carriers/XAC/conf; PRISM=/prism/etc/carriers/XAC
 # md5 of the stock (encoded) XAC files on S918WVLU8GZIF: the CSC tweaks replace them, so they only
 # run when the phone has exactly these
 XAC_CSC_MD5=4921cc4fa8a85213856630d0bf7b661a
 XAC_CCF_MD5=71e37a386615cc5db6b4e94fef72bea3
 XAC_CUST_MD5=8d2f19740e35a0d0f30759bebd033043
+# callrec on other sales codes: sales code, firmware, its stock (encoded) cscfeature.xml, that file's md5,
+# and the folder in files/ with the decoded file plus the recording keys (in every FeatureSet: these
+# multi-country files have one per country)
+CALLREC_CSC="EUX S918BXXUAGZIF /optics/configs/carriers/single/EUX/conf/system/cscfeature.xml fe43ce0679d14cb57dde71cff6475a81 eux-callrec"
+callrec_row() { echo "$CALLREC_CSC" | awk -v c="$(getprop ro.csc.sales_code)" '$1 == c'; }
 NEARBY_FLAGS="45704091 45723015"   # Nearby Sharing: enableExternalProviders + the provider-registry gate
 
 log() { m="$(cut -d' ' -f1 /proc/uptime) $*"; echo "$m" >> $L; echo "s23tweaks: $*" > /dev/kmsg; sync; }
@@ -535,21 +544,22 @@ EAD=EnvironmentAdaptiveDisplay
 EAD_PERM=privapp-permissions-com.samsung.android.sead.xml
 colortone_stage() {
   pl_check colortone $EAD.apk $EAD_PERM || return 1
-  [ -f $D/files/SecSettings-ead.patch ] || fail "colortone: files/SecSettings-ead.patch missing"
+  [ -z "$(ead_row)" ] || [ -f $D/files/SecSettings-ead-$(getprop ro.build.PDA).patch ] || fail "colortone: files/SecSettings-ead-$(getprop ro.build.PDA).patch missing"
   [ -f /system/priv-app/$EAD/$EAD.apk ] || stage priv-app/$EAD $PL/colortone/$EAD.apk
   stage etc/permissions $PL/colortone/$EAD_PERM
   return 0
 }
 colortone_bind() {
   sm=$(md5sum $SETTINGS | cut -d' ' -f1)
+  set -- $(ead_row); eb=$1; SETTINGS_STOCK_MD5=${2:-none}; SETTINGS_EAD_MD5=${3:-none}
   if [ "$sm" = $SETTINGS_EAD_MD5 ]; then :   # already patched (an earlier apply this boot)
   elif [ "$sm" != $SETTINGS_STOCK_MD5 ]; then
-    log "colortone: Settings isn't the S918WVLU8GZIF build, so the Adaptive color tone switch stays hidden"; return
+    log "colortone: Settings isn't the $(ead_builds) build, so the Adaptive color tone switch stays hidden"; return
   else
     P=$PL/colortone/SecSettings.apk   # the patched copy stays on storage and is reused at the next boot
     if [ "$(md5sum $P 2>/dev/null | cut -d' ' -f1)" != $SETTINGS_EAD_MD5 ]; then
       cp $SETTINGS $P.new
-      grep -v '^#' $D/files/SecSettings-ead.patch | while read off oct; do
+      grep -v '^#' $D/files/SecSettings-ead-$eb.patch | while read off oct; do
         printf "\\$oct" | dd of=$P.new bs=1 seek=$off conv=notrunc 2>/dev/null; done
       [ "$(md5sum $P.new | cut -d' ' -f1)" = $SETTINGS_EAD_MD5 ] || { rm -f $P.new; fail "colortone: Settings patch gave the wrong file"; }
       mv $P.new $P
@@ -707,7 +717,7 @@ battery_auth() {
   log "battery: auth IC presented"
 }
 
-# ---------- CSC (callrec, india): XAC firmware only ----------
+# ---------- CSC: india is XAC firmware only; callrec is XAC or a CALLREC_CSC sales code ----------
 csc_check() {
   [ "$(getprop ro.csc.sales_code)" = XAC ] || { log "$1: needs XAC (Canadian) firmware; skipped"; return 1; }
   for p in "$XAC/system/cscfeature.xml $XAC_CSC_MD5" "$XAC/system/customer_carrier_feature.json $XAC_CCF_MD5" "$XAC/customer.xml $XAC_CUST_MD5"; do
@@ -719,8 +729,15 @@ csc_check() {
 }
 csc_bind() { cp "$1" $R/$3; chmod 644 $R/$3; chcon u:object_r:vendor_configs_file:s0 $R/$3; mount --bind $R/$3 "$2" || fail "bind $2"; }
 callrec_apply() {
-  csc_check callrec || return 1; mkdir -p $R
-  csc_bind $D/files/xac-callrec/cscfeature.xml $XAC/system/cscfeature.xml csc_xac.xml
+  set -- $(callrec_row)
+  if [ -n "$1" ]; then
+    bound $3 && umount $3
+    [ "$(md5 $3)" = $4 ] || { log "callrec: $3 differs from $2; skipped"; return 1; }
+    mkdir -p $R; csc_bind $D/files/$5/cscfeature.xml $3 csc_callrec.xml
+  else
+    csc_check callrec || return 1; mkdir -p $R
+    csc_bind $D/files/xac-callrec/cscfeature.xml $XAC/system/cscfeature.xml csc_xac.xml
+  fi
   log "callrec: call recording on (Phone app > Settings > Record calls)"
 }
 india_apply() {
@@ -780,12 +797,17 @@ why_not() {
       kernel_supported || { echo "needs firmware $(echo $AIRDROP_FW | sed 's/ /, /g') (this phone runs $build)"; return; }
       [ "${gms:-0}" -ge $GMS_MIN ] || echo "needs Google Play services 26.11 or newer" ;;
     callrec|india)
+      set -- $1 $(callrec_row)
+      if [ $1 = callrec ] && [ -n "$2" ]; then
+        bound $4 || [ "$(md5 $4)" = $5 ] || echo "needs the $2 carrier file of $3 (this phone runs $build)"; return
+      fi
+      [ $1 = callrec ] && [ "$csc" != XAC ] && { echo "needs XAC (Canadian) or EUX (European) firmware (this phone is $csc)"; return; }
       [ "$csc" = XAC ] || { echo "needs XAC (Canadian) firmware (this phone is $csc)"; return; }
       csc_stock_ok || echo "needs the XAC carrier files of S918WVLU8GZIF (this phone runs $build)" ;;
     battery)
       for f in $BATT_EFS; do [ -f /efs/FactoryApp/$f ] || { echo "this phone has no $f in /efs/FactoryApp"; return; }; done ;;
     colortone)
-      [ "$build" = S918WVLU8GZIF ] || echo "needs firmware S918WVLU8GZIF (it patches that build's Settings app; this phone runs $build)" ;;
+      [ -n "$(ead_row)" ] || echo "needs firmware $(ead_builds) (it patches that build's Settings app; this phone runs $build)" ;;
     hotspot6g) [ -x /data/adb/ksu/bin/resetprop ] || echo "needs KernelSU's resetprop" ;;
     camerahdr) grep -q "<SEC_FLOATING_FEATURE_$CH_KEY>[^<]" $FF 2>/dev/null || echo "this firmware has no $CH_KEY camera setting to add the HDR steps to" ;;
     logvideo|camextras) grep -q '</resources>' $CF 2>/dev/null || echo "this firmware's $CF can't be edited" ;;
@@ -804,7 +826,7 @@ is_on() {
     battery) mounted /sys/class/power_supply tmpfs ;;
     features) bound $FF && grep -q SETTINGS_SUPPORT_AUTO_POWER_ON_OFF $FF 2>/dev/null ;;
     india) bound $PRISM ;;
-    callrec) bound $XAC/system/cscfeature.xml && ! bound $PRISM ;;
+    callrec) set -- $(callrec_row); bound ${3:-$XAC/system/cscfeature.xml} && ! bound $PRISM ;;
     hotspot6g) [ "$(getprop ro.csc.countryiso_code)" = IN ] ;;
     wifi7) bound $WPAS && bound $INI ;;
     display) bound $FF && grep -q "<SEC_FLOATING_FEATURE_LCD_CONFIG_VIVIDNESS>1<" $FF 2>/dev/null ;;
@@ -952,7 +974,8 @@ status)
   echo "vulkan:   renderer $(getprop debug.hwui.renderer | grep . || echo default)"
   echo "wifi7:    wpa_supplicant $(bound $WPAS && echo S24 || echo stock), driver MLO settings $(bound $INI && echo on || echo off)"
   echo "6ghz ap:  CSC country $(getprop ro.csc.countryiso_code)"
-  echo "csc:      $(bound $XAC/system/cscfeature.xml && grep -oE '<SalesCode>[A-Z]+' $XAC/system/cscfeature.xml | cut -c12- || echo stock)"
+  set -- $(callrec_row); f=${3:-$XAC/system/cscfeature.xml}
+  echo "csc:      $(bound $f && grep -m1 -oE '<SalesCode>[A-Z]+' $f | cut -c12- || echo stock)"
   ;;
 cleanup)
   # Undo everything that outlives a reboot, then delete the state folder. module/uninstall.sh runs this

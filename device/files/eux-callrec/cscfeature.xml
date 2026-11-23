@@ -1,0 +1,258 @@
+<?xml version='1.0' encoding='utf-8'?>
+<SamsungMobileFeature>
+  <Version>ED00024</Version>
+  <Country>GERMANY</Country>
+  <CountryISO>DE</CountryISO>
+  <SalesCode>EUX</SalesCode>
+  <FeatureSet>
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_GMS_SetClientIDBasePg2>android-samsung-terr2-deos-21-w1</CscFeature_GMS_SetClientIDBasePg2>
+    <CscFeature_GMS_SetClientIDBasePg3>android-samsung-terr1-gio3x1230</CscFeature_GMS_SetClientIDBasePg3>
+    <CscFeature_RIL_ConfigSVNVersion>21</CscFeature_RIL_ConfigSVNVersion>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_SetupWizard_ConfigProvidedCountrySet>AT_AT;CH_CH;LI_CH;BG_BG;GB_GB;IE_GB;DE_DE;GR_GR;IT_IT;MT_IT;SM_IT;VA_IT;BE_LU;LU_LU;SE_SE;DK_SE;FI_SE;NO_SE;IS_SE;ES_ES;AD_ES;NL_NL;EE_LV;LT_LV;LV_LV;RS_RS;XK_RS;BA_RS;AL_RS;MK_RS;ME_RS;HR_SI;SI_SI;PT_PT;RO_RO;FR_FR;MC_FR;HU_HU;PL_PL;CZ_CZ;SK_SK;UA_UA</CscFeature_SetupWizard_ConfigProvidedCountrySet>
+    <CscFeature_SetupWizard_SupportEsimAsPrimary>TRUE</CscFeature_SetupWizard_SupportEsimAsPrimary>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,de-DE,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_Wifi_SupportBlockSkipForSetupWizard>TRUE</CscFeature_Wifi_SupportBlockSkipForSetupWizard>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <Country countryISO="AT">AUSTRIA</Country>
+  <Country countryISO="BG">BULGARIA</Country>
+  <Country countryISO="CH">SWITZERLAND</Country>
+  <Country countryISO="CZ">CZECHO</Country>
+  <Country countryISO="DE">GERMANY</Country>
+  <Country countryISO="ES">SPAIN</Country>
+  <Country countryISO="FR">FRANCE</Country>
+  <Country countryISO="GB">UNITED KINGDOM</Country>
+  <Country countryISO="GR">GREECE</Country>
+  <Country countryISO="HU">HUNGARY</Country>
+  <Country countryISO="IT">ITALY</Country>
+  <Country countryISO="LU">LUXEMBOURG</Country>
+  <Country countryISO="LV">LATVIA</Country>
+  <Country countryISO="NL">NETHERLANDS</Country>
+  <Country countryISO="PL">POLAND</Country>
+  <Country countryISO="PT">PORTUGAL</Country>
+  <Country countryISO="RO">ROMANIA</Country>
+  <Country countryISO="SE">SWEDEN</Country>
+  <Country countryISO="SI">SLOVENIA</Country>
+  <Country countryISO="SK">SLOVAK</Country>
+  <CountryISO countryISO="AT">AT</CountryISO>
+  <CountryISO countryISO="BG">BG</CountryISO>
+  <CountryISO countryISO="CH">CH</CountryISO>
+  <CountryISO countryISO="CZ">CZ</CountryISO>
+  <CountryISO countryISO="DE">DE</CountryISO>
+  <CountryISO countryISO="ES">ES</CountryISO>
+  <CountryISO countryISO="FR">FR</CountryISO>
+  <CountryISO countryISO="GB">GB</CountryISO>
+  <CountryISO countryISO="GR">GR</CountryISO>
+  <CountryISO countryISO="HU">HU</CountryISO>
+  <CountryISO countryISO="IT">IT</CountryISO>
+  <CountryISO countryISO="LU">LU</CountryISO>
+  <CountryISO countryISO="LV">LV</CountryISO>
+  <CountryISO countryISO="NL">NL</CountryISO>
+  <CountryISO countryISO="PL">PL</CountryISO>
+  <CountryISO countryISO="PT">PT</CountryISO>
+  <CountryISO countryISO="RO">RO</CountryISO>
+  <CountryISO countryISO="SE">SE</CountryISO>
+  <CountryISO countryISO="SI">SI</CountryISO>
+  <CountryISO countryISO="SK">SK</CountryISO>
+  <FeatureSet countryISO="AT">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,de-DE,default_on,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="BG">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="CH">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_DialEmergNumAsNormalCall>117,118,143,144,145,147</CscFeature_VoiceCall_DialEmergNumAsNormalCall>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="CZ">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="DE">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_VT_ConfigCapability>three_widget</CscFeature_VT_ConfigCapability>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,de-DE,default_off,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,de-DE,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="ES">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_SystemUI_ConfigOpBranding5GIcon>UseOneShapedIcon</CscFeature_SystemUI_ConfigOpBranding5GIcon>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,es-ES,default_off,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,es-ES,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>SkipLog_214/016:900018018:900202010:116111:024:021:017:028:116000,CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="FR">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_SystemUI_ConfigOpBranding5GIcon>UseOneShapedIcon</CscFeature_SystemUI_ConfigOpBranding5GIcon>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,fr-FR,default_off,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,fr-FR,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="GB">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_ConfigDuoVideoCall>ViLTE,</CscFeature_Contact_ConfigDuoVideoCall>
+    <CscFeature_Contact_ConfigImsOpStyle>BTU</CscFeature_Contact_ConfigImsOpStyle>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Message_SupportSuggestedCategory>TRUE</CscFeature_Message_SupportSuggestedCategory>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,en-GB,default_off,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,en-GB,de-DE,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="GR">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="HU">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="IT">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_ConfigImsOpStyle>TIM</CscFeature_Contact_ConfigImsOpStyle>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_LockScreen_ConfigClockDisplayPolicy>IgnoreNationalRoamingWithoutMNC</CscFeature_LockScreen_ConfigClockDisplayPolicy>
+    <CscFeature_SystemUI_ConfigOpBranding5GIcon>UseOneShapedIcon</CscFeature_SystemUI_ConfigOpBranding5GIcon>
+    <CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>true,it-IT,default_off,consent_com</CscFeature_VoiceCall_ConfigOpStyleForBixbyTextCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,it-IT,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="LU">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="LV">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>SkipLog_214/016:900018018:900202010:116111:024:021:017:028:116000</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="NL">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="PL">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_LockScreen_ConfigClockDisplayPolicy>IgnoreNationalRoamingWithoutMNC</CscFeature_LockScreen_ConfigClockDisplayPolicy>
+    <CscFeature_SystemUI_ConfigOverrideDataIcon>LTE</CscFeature_SystemUI_ConfigOverrideDataIcon>
+    <CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>true,pl-PL,en-US,default_on</CscFeature_VoiceCall_ConfigOpStyleForLiveTranslate>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="PT">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_SystemUI_ConfigOpBranding5GIcon>UseOneShapedIcon</CscFeature_SystemUI_ConfigOpBranding5GIcon>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="RO">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_ConfigImsOpStyle>ROM</CscFeature_Contact_ConfigImsOpStyle>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="SE">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_Setting_SupportELabelFccId>FALSE</CscFeature_Setting_SupportELabelFccId>
+    <CscFeature_Setting_SupportELabelSPenFccId>FALSE</CscFeature_Setting_SupportELabelSPenFccId>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="SI">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_LockScreen_ConfigClockDisplayPolicy>IgnoreNationalRoamingWithMNC</CscFeature_LockScreen_ConfigClockDisplayPolicy>
+    <CscFeature_Setting_EnableDataRoamingMenuInDetail>TRUE</CscFeature_Setting_EnableDataRoamingMenuInDetail>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+  <FeatureSet countryISO="SK">
+    <CscFeature_Audio_SupportSafeMediaVolumeDialog>TRUE</CscFeature_Audio_SupportSafeMediaVolumeDialog>
+    <CscFeature_Common_ConfigSvcProviderForUnknownNumber>whitepages,whitepages,off</CscFeature_Common_ConfigSvcProviderForUnknownNumber>
+    <CscFeature_Contact_SupportDuoVideoCall>TRUE</CscFeature_Contact_SupportDuoVideoCall>
+    <CscFeature_VoiceCall_ConfigOpStyleForLogs>CnapLog</CscFeature_VoiceCall_ConfigOpStyleForLogs>
+    <CscFeature_VoiceCall_ConfigRecording>RecordingAllowed</CscFeature_VoiceCall_ConfigRecording>
+    <CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>TRUE</CscFeature_VoiceCall_SupportVoiceRecordingDuringHoldCall>
+  </FeatureSet>
+</SamsungMobileFeature>

@@ -1,0 +1,36 @@
+# Adaptive Color Tone: SecSettings.apk (S918BXXUAGZIF, md5 5b20b1a68f94d01bba5a776e15ffdc30) -> md5 de6d142d238849198810dfe70fada8dd
+# SecEADPreferenceController.getAvailabilityStatus() is compiled to 'return 3' on the S23; one byte in its dex
+# (const/4 v0, 3 -> 0) makes it available. The other bytes are that dex's SHA-1 and adler32 and the zip CRCs.
+# Made by tools/eadpatch.py. Format: <zero-based file offset> <new byte in octal>
+18194066 35
+18194067 27
+18194068 45
+18194069 64
+18194108 271
+18194109 107
+18194110 222
+18194111 330
+18194112 205
+18194113 10
+18194114 31
+18194115 252
+18194116 10
+18194117 221
+18194118 373
+18194119 155
+18194120 271
+18194121 74
+18194122 245
+18194124 261
+18194125 213
+18194126 315
+18194127 341
+18194128 303
+18194129 36
+18194130 211
+18194131 312
+23555453 0
+117133100 35
+117133101 27
+117133102 45
+117133103 64

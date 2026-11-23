@@ -32,7 +32,8 @@ The release is built and tested for exactly one setup:
 |---|---|---|
 | `battery`, `features` | No (One UI 9 floating features) | Check that the tags still exist in `/system/etc/floating_feature.xml` |
 | `hotspot6g` | Mostly no | Re-check `SemWifiApServiceImpl.isRegionFor6GCountry()` in `/system/framework/semwifi-service.jar`; `IN` must still pass |
-| `callrec`, `india` | **Yes**: XAC on GZIF only | New CSC files + new MD5 gates (see "Carrier config") |
+| `callrec`, `india` | **Yes**: XAC on S918W GZIF; `callrec` also EUX on S918B GZIF | New CSC files + new MD5 gates (see "Carrier config") |
+| `colortone` | **Yes**: the build's `SecSettings.apk` | `python3 -I tools/eadpatch.py SecSettings.apk <build>`, put the patch in `device/files/`, add the two MD5s to `SETTINGS_EAD` in `device/tweaks.sh` and the build to `can_ct` in `install.sh` |
 | `airdrop`, `wifi7` kernel modules | **Yes**: kernel build (all models of one build share them) | Same build, other model: check and add to `AIRDROP_FW` (see "Another model on the same build"). New build: rebuild all four `.ko`s (see "Kernel modules") |
 | `airdrop` payload (firmware, Mosey, supplicant) | Android version + S24 release | Re-extract from a matching S24 firmware (see "Payload") |
 | Play services flags `45704091`, `45723015` | Play services version | Re-check if AirDrop doesn't show up (see "Play services") |
@@ -153,6 +154,7 @@ These replace three XAC files with plain-XML versions. Samsung's parser accepts 
 
 - Decode a stock file: `tools/omcdecode.py salts.txt shifts.txt in out`. The 256-entry `salts` and `shifts` arrays come from `SemCscFeature` in the phone's `/system/framework/framework.jar`; decompile that one class.
 - `callrec` is the decoded XAC `cscfeature.xml` plus the call-recording keys. `india` uses the INS files from an S918B INS firmware (`HOME_CSC`).
+- Another sales code for `callrec`: add a line to `CALLREC_CSC` in `tweaks.sh` (sales code, firmware, path and MD5 of the stock `cscfeature.xml`, folder in `device/files/`) and to `can_rec` in `install.sh`. The file is the decoded stock one plus the two recording keys. Multi-country files (`/optics/configs/carriers/single/<CSC>`, e.g. EUX) have one `FeatureSet` per country; add the keys to every one.
 - The MD5 gates in `tweaks.sh` (`XAC_*_MD5`) make the tweak refuse to run on any other stock file. For a new firmware, make new files from **that** firmware's stock files and update the MD5s. Never reuse files across firmware versions.
 
 ## Known dead ends (don't retry)

@@ -7,7 +7,7 @@ category or single tweaks.
 
 | # | Category | Tweak | What you get | Works on |
 |---|---|---|---|---|
-| 1 | Connectivity | `airdrop` | **AirDrop with iPhones, iPads and Macs.** Quick Share → *Share with Apple devices* | One UI 9 build **GZIF** on SM-S918W, S918B, S918U1, S918U or S918N. Tested on the S918W; the others have the same Wi-Fi drivers and kernel symbols (checked against their firmware files) |
+| 1 | Connectivity | `airdrop` | **AirDrop with iPhones, iPads and Macs.** Quick Share → *Share with Apple devices* | One UI 9 build **GZIF** on SM-S918W, S918B, S918U1, S918U or S918N. Tested on the S918W and S918B; the others have the same Wi-Fi drivers and kernel symbols (checked against their firmware files) |
 | 2 | Connectivity | `wifi7` | **Wi-Fi 7 multi-link (MLO)** with Wi-Fi 7 routers. Includes `airdrop` | same as `airdrop` |
 | 3 | Connectivity | `hotspot6g` | **6 GHz Mobile Hotspot** (Wi-Fi 6E, 160 MHz): Mobile Hotspot → Band → 6 GHz | any S23 Ultra on One UI 9 |
 | 4 | Camera | `logvideo` | **Log video**: Camera → Pro video gets the LOG button and LUT preview (10-bit HEVC) | any S23 Ultra on One UI 9 |
@@ -15,7 +15,7 @@ category or single tweaks.
 | 6 | Camera | `camerahdr` | **Camera HDR processing**: puts back the multi-frame HDR and low-light HDR steps One UI 9 removed from the S23 (see [docs/findings.md](docs/findings.md)). **Untested** | any S23 Ultra on One UI 9 (21 MB download) |
 | 7 | Camera | `autoframe` | **4K auto framing** in video, as on the S24. **Reported to make the camera fail** (S918B), so a Camera category pick leaves it out | any S23 Ultra on One UI 9 |
 | 8 | Display and graphics | `display` | **Vividness slider** (Settings → Display → Screen mode → Advanced settings) and the **lock screen wallpaper on Always On Display** | any S23 Ultra on One UI 9 |
-| 9 | Display and graphics | `colortone` | **Adaptive color tone**: Settings → Display, the screen's colour follows the room light | firmware S918WVLU8GZIF (1 MB download) |
+| 9 | Display and graphics | `colortone` | **Adaptive color tone**: Settings → Display, the screen's colour follows the room light | firmware S918WVLU8GZIF or S918BXXUAGZIF (1 MB download) |
 | 10 | Display and graphics | `vulkan` | Apps draw with **Vulkan** instead of OpenGL, as on the S24 | any S23 Ultra on One UI 9 |
 | 11 | Galaxy AI and Samsung apps | `galaxyai` | The S24's **Now Brief**, **Creative Studio** and **Call Assist** | firmware S918WVLU8GZIF (219 MB download) |
 | 12 | Galaxy AI and Samsung apps | `audioeraser` | **Audio Eraser**: Gallery → video → Edit → remove wind, noise, music or voices | firmware S918WVLU8GZIF (34 MB download) |
@@ -24,7 +24,7 @@ category or single tweaks.
 | 15 | Galaxy AI and Samsung apps | `bargein` | **Bixby barge-in**: talk over Bixby while it answers. **Untested** | any S23 Ultra on One UI 9 |
 | 16 | Battery and settings | `battery` | Settings → Battery → **Battery information** shows battery health and cycle count | any S23 Ultra on One UI 9 |
 | 17 | Battery and settings | `features` | **Auto power on/off** schedule, **louder VoIP calls** | any S23 Ultra on One UI 9 |
-| 18 | Carrier | `callrec` | **Call recording** in the Samsung Phone app | XAC (Canadian) firmware S918WVLU8GZIF |
+| 18 | Carrier | `callrec` | **Call recording** in the Samsung Phone app | XAC (Canadian) firmware S918WVLU8GZIF, or EUX (European) firmware S918BXXUAGZIF |
 | 19 | Carrier | `india` | **India carrier config for Airtel / Jio SIMs**: the **Use 5G standalone networks** switch (Settings → Connections → Mobile networks), call recording, Smart IVR, message cards and more. The sales code stays XAC. With an Indian SIM, the Carrier category picks this instead of `callrec` | XAC (Canadian) firmware S918WVLU8GZIF |
 
 Not included, because they don't work on the S23: the S24's AI weather wallpaper (its model is built
@@ -116,6 +116,8 @@ adb shell su -c "sh /data/adb/modules/s23_ultra_tweaks/tweaks.sh autostart off"
 
 The S23's Wi-Fi briefly disconnects while Quick Share is looking for Apple devices. The S24 does the same.
 
+If no Apple device shows up after the first apply, Play services may not have picked up its two flags yet. On an S918B it started offering Apple devices only after being restarted some minutes later: `adb shell su -c 'am force-stop com.google.android.gms'`, then open Quick Share again.
+
 ## How AirDrop works on an S23
 
 Samsung's S24-and-newer phones do AirDrop through Google's **Mosey** stack. The phone runs Apple's peer-to-peer Wi-Fi protocol (AWDL) itself, using a Qualcomm firmware feature called *Wondertap*. The S23 Ultra has the same Wi-Fi chip as the S24 Ultra (Qualcomm WCN7850), but its firmware, driver and system image leave all of this out. The `airdrop` tweak adds the S24 pieces at runtime:
@@ -192,7 +194,7 @@ it's kept in `/data/adb/s23tweaks/payload/` so it isn't downloaded again.
 - **audioeraser**: the S23's video editor engine was built without the audio scanner. The tweak swaps in
   the S24 engine and adds its sound-separation libraries and two models.
 - **colortone**: Samsung compiled the S23's Settings to hide the switch. The tweak patches one byte in
-  a patched copy of Settings, kept on storage (`device/files/SecSettings-ead.patch`, checked by MD5) and adds the S24's
+  a patched copy of Settings, kept on storage (`device/files/SecSettings-ead-<firmware>.patch`, checked by MD5; `tools/eadpatch.py` makes one for another firmware's Settings app) and adds the S24's
   colour-tone service.
 - **galaxyai**: binds the S24 builds of the three apps over the S23's. While it's on, it replaces any
   Galaxy Store update of Personal Data Intelligence; after a reboot without it, Galaxy Store offers the
@@ -241,10 +243,10 @@ items (the flags do nothing on their own; `tweaks.sh unflag` removes just them).
 
 ## Known limitations
 
-- **AirDrop needs One UI 9 build GZIF** (S918WVLU8GZIF, S918BXXUAGZIF, S918U1UEU8GZIF, S918USQU8GZIF or S918NKSU8GZIF). The modules are built on the S918W kernel. The other four have the same Wi-Fi drivers and the same kernel symbol CRCs, checked with `tools/kocompat.py` and `tools/modcmp.py` against their firmware files, but only the S918W has been tested on a phone. A different build needs the modules rebuilt (below).
+- **AirDrop needs One UI 9 build GZIF** (S918WVLU8GZIF, S918BXXUAGZIF, S918U1UEU8GZIF, S918USQU8GZIF or S918NKSU8GZIF). The modules are built on the S918W kernel. The other four have the same Wi-Fi drivers and the same kernel symbol CRCs, checked with `tools/kocompat.py` and `tools/modcmp.py` against their firmware files, but only the S918W and S918B have been tested on a phone. A different build needs the modules rebuilt (below).
 - Only **sending** to Apple devices has been tested. Receiving from them hasn't.
 - The Wi-Fi link to the PCIe bus stays at Gen2, so very large transfers may be slower than on an S24.
-- `callrec` and `india` replace three carrier config files. They only apply when those files exactly match the S918WVLU8GZIF XAC ones (checked by MD5), and never touch the sales code (`mps_code.dat`, `sales_code.dat`, `omc.info`). Changing the sales code can factory-reset the phone.
+- `callrec` and `india` replace three carrier config files. They only apply when those files exactly match the S918WVLU8GZIF XAC ones (checked by MD5), On EUX firmware S918BXXUAGZIF `callrec` replaces one file, `cscfeature.xml`, under the same MD5 check. Neither tweak ever touches the sales code (`mps_code.dat`, `sales_code.dat`, `omc.info`). Changing the sales code can factory-reset the phone.
 - Tested on one phone: SM-S918W, S918WVLU8GZIF, Android 17, Play services 26.45. Reports from other models are welcome.
 
 ## Other firmware: let your AI agent build it
