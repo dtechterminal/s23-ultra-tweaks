@@ -22,7 +22,7 @@
 #         camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein
 #         callscreen tenbit hideksu cam24fps weather wideflash
 #         prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage
-#         anamorphic profps slowmo4k120 dual5g  (see README.md; the categories they're grouped in are in install.sh and the WebUI)
+#         anamorphic profps slowmo4k120 dual5g nronly natroam  (see README.md; the categories they're grouped in are in install.sh and the WebUI)
 #
 # Nothing here writes to a partition. Every change is a module load, an overlay, a bind mount or a
 # runtime setting, so a reboot always returns the phone to stock. The files themselves stay on storage
@@ -31,7 +31,8 @@
 # the airdrop tweak's Play services flag overrides, stored in Play services' own database
 # (harmless without the rest; "unflag" removes them), camextras' camera app setting, callscreen,
 # which installs Samsung Language Core as an ordinary app (undo: pm uninstall <package>), and weather,
-# which installs a 12 KB AI Core stub app and turns Samsung's live wallpaper app back on if it was off.
+# which installs a 12 KB AI Core stub app and turns Samsung's live wallpaper app back on if it was off,
+# and natroam, which writes a carrier config override file in the Phone app's storage (removed on undo).
 # dual5g is the one change inside the modem: it edits one policy file in the modem's own storage (EFS),
 # which stays across reboots and module removal until it's put back. The original is backed up before
 # the first write (state folder and Download/s23tweaks-modem-backup); un-picking dual5g, removing the
@@ -47,7 +48,7 @@ mkdir -p $V; L=$V/tweaks.log; R=$V/run
 [ -f $D/module.prop ] && MODULE=1 || MODULE=0
 APPLY_LOCK=/dev/s23tweaks_apply.lock         # /dev is tmpfs: locks never survive a reboot
 STAYS_TILL_REBOOT="airdrop wifi7 battery india callrec vulkan audioeraser hdr2023 colortone tenbit galaxyai settingssearch hideksu cam24fps"
-TWEAK_IDS="airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein callscreen tenbit hideksu cam24fps weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps slowmo4k120 dual5g"
+TWEAK_IDS="airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein callscreen tenbit hideksu cam24fps weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps slowmo4k120 dual5g nronly natroam"
 GMS_MIN=261125000                            # Play services 26.11, the first with Mosey support
 # Firmware the AirDrop/Wi-Fi 7 kernel modules are checked against (one line each, read by customize.sh).
 # All are One UI 9 build GZIF on GKI kernel 34343818, and their whole Wi-Fi stack (cnss2, mhi, cfg80211,
@@ -1380,7 +1381,9 @@ battery_auth() {
 # ---------- CSC (callrec, india): any sales code; the paths come from csc_paths ----------
 # csc_unbind: drop the module's binds so the stock files show again (an apply always starts from stock)
 csc_unbind() {
-  for f in $CSCF $CCF $CUST $PRISM; do [ -n "$f" ] && bound $f && umount $f; done
+  for f in $CSCF $CCF $CUST $PRISM; do
+    [ -n "$f" ] || continue; n=0; while bound $f && [ $n -lt 5 ]; do umount $f; n=$((n+1)); done   # nronly may stack on india
+  done
   return 0
 }
 csc_bind() { cp "$1" $R/$3; chmod 644 $R/$3; chcon u:object_r:vendor_configs_file:s0 $R/$3; mount --bind $R/$3 "$2" || fail "bind $2"; }
@@ -1460,6 +1463,105 @@ india_apply() {
   log "india: INS carrier config on (sales code stays $SC on disk)"
   india_identity
   india_simprompt_off
+}
+
+# nronly: "LTE only" and "5G only" in Network mode (Settings > Connections > Mobile networks). Samsung's
+# TelephonyUI has both: after building its list it adds LTE only when the SIM's carrier features ask for it
+# (CarrierFeature_Setting_CustNetworkSelMenu4 containing LTEONLY; Jio SIMs always get it), then 5G only
+# when CarrierFeature_VoiceCall_ConfigNetworkList contains _Add5gOnly (j7.a.a()). Those are per-carrier
+# keys in customer_carrier_feature.json that the S23's files don't set. Add them to every carrier block of
+# the file in use (the phone's own, or india's INS one), encode it again (on retail builds
+# SemCarrierFeature reads only OMC-encoded files) and bind it. Apps get the values from zygote, so the
+# framework restarts. 5G only means 5G standalone: no LTE fallback, so no signal where SA isn't deployed.
+CCF_NR=ccf_nr.json
+nr_ours() { [ -n "$CCF" ] && grep " $CCF " /proc/self/mountinfo 2>/dev/null | tail -n 1 | grep -q "/$CCF_NR "; }
+nronly_apply() {
+  mkdir -p $R; n=0; while nr_ours && [ $n -lt 5 ]; do umount $CCF; n=$((n+1)); done   # rebuild from what's under ours
+  chmod 755 $OMCDEC 2>/dev/null
+  $OMCDEC $CCF > $R/ccf_nr.dec 2>>$L || { log "nronly: couldn't decode $CCF"; rm -f $R/ccf_nr.dec; return 1; }
+  # every "feature": { ... } block holds one "key": "value" per line; anything else and we leave the file alone
+  awk 'function v(l) { sub(/^[^:]*: *"/, "", l); sub(/" *,? *$/, "", l); return l }
+    /"feature": *\{ *$/ { print; inb = 1; n = 0; next }
+    inb && /^[ \t]*\}/ {
+      nl = ""; sm = ""; k = 0; ind = ""
+      for (i = 1; i <= n; i++) {
+        if (b[i] !~ /^[ \t]*"[^"]+": *"[^"]*" *,? *$/) bad = 1
+        if (ind == "") { ind = b[i]; sub(/[^ \t].*/, "", ind) }
+        if (b[i] ~ /"CarrierFeature_VoiceCall_ConfigNetworkList"/) nl = v(b[i])
+        else if (b[i] ~ /"CarrierFeature_Setting_CustNetworkSelMenu4"/) sm = v(b[i])
+        else { e = b[i]; sub(/ *, *$/, "", e); o[++k] = e }
+      }
+      if (ind == "") { ind = $0; sub(/[^ \t].*/, "", ind); ind = ind "  " }
+      if (index(nl, "_Add5gOnly") == 0) nl = nl "_Add5gOnly"
+      if (index(sm, "LTEONLY") == 0) sm = (sm == "" ? "LTEONLY" : sm ",LTEONLY")
+      o[++k] = ind "\"CarrierFeature_Setting_CustNetworkSelMenu4\": \"" sm "\""
+      o[++k] = ind "\"CarrierFeature_VoiceCall_ConfigNetworkList\": \"" nl "\""
+      for (i = 1; i <= k; i++) print o[i] (i < k ? "," : "")
+      print; inb = 0; next }
+    inb { b[++n] = $0; next }
+    { print }
+    END { if (bad || inb) exit 1 }' $R/ccf_nr.dec > $R/ccf_nr.txt; ok=$?
+  blocks=$(grep -c '"feature": *{ *$' $R/ccf_nr.dec)
+  if [ $ok != 0 ] || [ "$blocks" -lt 1 ] || [ "$(grep -c '_Add5gOnly' $R/ccf_nr.txt)" != "$blocks" ] ||
+     [ "$(grep -c '"CarrierFeature_Setting_CustNetworkSelMenu4": "[^"]*LTEONLY' $R/ccf_nr.txt)" != "$blocks" ]; then
+    log "nronly: $CCF isn't laid out the way this edit expects; skipped"; rm -f $R/ccf_nr.dec $R/ccf_nr.txt; return 1
+  fi
+  $OMCDEC -e $R/ccf_nr.txt > $R/$CCF_NR.new 2>>$L && $OMCDEC $R/$CCF_NR.new 2>/dev/null | cmp -s - $R/ccf_nr.txt ||
+    { log "nronly: encoding the edited carrier features failed; skipped"; rm -f $R/$CCF_NR.new $R/ccf_nr.dec $R/ccf_nr.txt; return 1; }
+  mv $R/$CCF_NR.new $R/$CCF_NR; rm -f $R/ccf_nr.dec $R/ccf_nr.txt
+  chmod 644 $R/$CCF_NR; chcon u:object_r:vendor_configs_file:s0 $R/$CCF_NR
+  mount --bind $R/$CCF_NR $CCF || { log "nronly: couldn't bind $CCF"; return 1; }
+  log "nronly: 'LTE only' and '5G only' added to Network mode for both SIMs (Settings > Connections > Mobile networks > Network mode)"
+}
+nronly_off() {
+  nr_ours || return 1
+  n=0; while nr_ours && [ $n -lt 5 ]; do umount $CCF; n=$((n+1)); done
+  log "nronly: not picked; Network mode is back to Samsung's list"
+}
+
+# natroam: an Indian SIM on another circle's network of its own operator (an Airtel UP East SIM, 405-54, on
+# Airtel Karnataka, 404-45) is on national roaming: the modem reports roaming, Android shows "R" and the
+# data-roaming switch applies, though national roaming has been free in India since 2017. Android's carrier
+# config key gsm_nonroaming_networks_string_array lists networks to treat as home; set it to India's MCCs
+# for every Indian SIM (ICCID 8991...) through the Phone app's persistent override file, the one
+# CarrierConfigManager.overrideConfig(persistent) writes (`cmd phone cc` refuses on user builds). Roaming
+# abroad still shows. Our files are listed in $V/natroam; un-picking or cleanup deletes them.
+CC_DIR=/data/user_de/0/com.android.phone/files; NROAM=$V/natroam
+natroam_files() {   # "<default cache file> <override file>" for each Indian SIM the Phone app has a config for
+  for f in $CC_DIR/carrierconfig-*-8991*-*.xml; do
+    [ -f "$f" ] || continue; case $f in *-override-*) continue ;; esac
+    b=${f##*/}; b=${b#carrierconfig-}; b=${b%.xml}       # <package>-<iccid>-<carrier id>
+    cid=${b##*-}; b=${b%-*}; iccid=${b##*-}; pkg=${b%-*}
+    case $iccid in 8991[0-9]*) echo "$f $CC_DIR/carrierconfig-$pkg-override-$iccid-$cid.xml" ;; esac
+  done
+}
+natroam_apply() {
+  natroam_files > $R/natroam.list
+  [ -s $R/natroam.list ] || { log "natroam: no Indian SIM (ICCID 8991...) has a carrier config yet; insert one and apply again"; return 1; }
+  changed=1
+  while read f o; do
+    ver=$(sed -n 's|.*name="__carrier_config_package_version__">\([^<]*\)<.*|\1|p' $f | head -n 1)
+    [ -n "$ver" ] || { log "natroam: no package version in ${f##*/}; skipped that SIM"; continue; }
+    if [ -f $o ] && ! grep -qxF "$o" $NROAM 2>/dev/null; then
+      log "natroam: an override for one SIM already exists (not ours); left alone"; continue
+    fi
+    printf '%s\n' '<bundle>' '<string-array name="gsm_nonroaming_networks_string_array" num="3">' \
+      '<item value="404" />' '<item value="405" />' '<item value="406" />' '</string-array>' \
+      "<string name=\"__carrier_config_package_version__\">$ver</string>" '</bundle>' > $R/natroam.xml
+    if ! cmp -s $R/natroam.xml $o 2>/dev/null; then
+      cat $R/natroam.xml > $o; chown 1001:1001 $o; chmod 600 $o; chcon u:object_r:radio_data_file:s0 $o
+      grep -qxF "$o" $NROAM 2>/dev/null || echo "$o" >> $NROAM
+      changed=0
+    fi
+  done < $R/natroam.list
+  rm -f $R/natroam.xml $R/natroam.list
+  log "natroam: Indian networks (404/405/406) count as home on Indian SIMs; national roaming no longer shows 'R'"
+  return $changed   # 0: a file changed, so the Phone app has to reload it
+}
+natroam_on() { [ -s $NROAM ] || return 1; while read o; do [ -f "$o" ] || return 1; done < $NROAM; }
+natroam_off() {   # delete our override files; 0 if any was removed
+  [ -s $NROAM ] || { rm -f $NROAM; return 1; }
+  while read o; do rm -f "$o"; done < $NROAM; rm -f $NROAM
 }
 
 # Samsung's Mobile Hotspot offers 6 GHz only when SemWifiApServiceImpl.supportWifiAp6GBasedOnCountry() says
@@ -1800,6 +1902,13 @@ why_not() {
     galaxyai)
       for p in $GAI_APPS; do [ -f /system/$p/${p#*/}.apk ] || { echo "this phone has no /system/$p/${p#*/}.apk to replace"; return; }; done ;;
     settingssearch) [ -f /system/$SSI/SecSettingsIntelligence.apk ] || echo "this phone has no /system/$SSI to replace" ;;
+    nronly)
+      [ -f "$CCF" ] || { echo "can't find this phone's customer_carrier_feature.json (mdc.system.path is '$CSYS')"; return; }
+      [ -f $OMCDEC ] || { echo "files/omcdec is missing"; return; }
+      pm path com.samsung.android.app.telephonyui >/dev/null 2>&1 || echo "this phone has no Samsung TelephonyUI (Mobile networks settings)" ;;
+    natroam)
+      [ -d $CC_DIR ] || { echo "can't find the Phone app's carrier config folder"; return; }
+      [ -n "$(natroam_files)" ] || echo "needs an Indian SIM (Airtel, Jio, Vi, BSNL)" ;;
     dual5g)
       [ -x $EFST ] || { echo "files/efstool is missing"; return; }
       [ -x /vendor/bin/diag_socket_log ] || { echo "this firmware has no /vendor/bin/diag_socket_log to reach the modem with"; return; }
@@ -1848,6 +1957,8 @@ is_on() {
     galaxyai) bound /system/priv-app/SamsungSmartSuggestions/SamsungSmartSuggestions.apk ;;
     hideksu) hideksu_on ;;
     dual5g) [ -f $D5G/applied ] ;;
+    nronly) nr_ours ;;
+    natroam) natroam_on ;;
     *) return 1 ;;
   esac
 }
@@ -1947,6 +2058,10 @@ $CF_PROFPS"
   if has india; then india_apply && { setprop ctl.restart ril-daemon; log "india: mobile network restarting"; restart=1; }
   elif has callrec; then callrec_apply && restart=1; fi
   has india || india_simprompt_on   # restore the carrier-switch prompt we suppressed for india
+  if has nronly; then nronly_apply && restart=1   # after india/callrec, which rebind the carrier files
+  else nronly_off && restart=1; fi
+  if has natroam; then natroam_apply && restart=1   # the Phone app reads the override when it starts
+  elif natroam_off; then log "natroam: not picked; national roaming shows as roaming again"; restart=1; fi
   if has hotspot6g; then hotspot6g_pre && restart=1   # after india, which may set the country to IN
   elif [ "$(getprop $H6_PROP)" = 1 ]; then /data/adb/ksu/bin/resetprop $H6_PROP 0 && log "hotspot6g: not picked; 6 GHz override off"; fi
   apk_binds
@@ -2053,6 +2168,8 @@ status)
   echo "6ghz ap:  $(h6_offered && echo offered || echo "not offered") (CSC country $(getprop ro.csc.countryiso_code), override $(getprop $H6_PROP | grep . || echo unset))"
   echo "csc:      $SC $(bound $CSCF && { grep -q '<SalesCode>INS<' $CSCF && echo "with the INS config" || echo "with call recording"; } || echo stock) ($CSYS)"
   echo "reported: model $(getprop ro.product.model), csc $(getprop ro.csc.sales_code), country $(getprop ro.csc.countryiso_code)$([ -e $V/india_identity ] && [ "$(getprop ro.product.model)" = $IN_MODEL ] && echo " (india identity on)")"
+  echo "nronly:   $(nr_ours && echo "on (Network mode offers LTE only and 5G only)" || echo off)"
+  echo "natroam:  $([ -s $NROAM ] && echo "on ($(grep -c . $NROAM) SIM override(s))" || echo off)"
   echo "dual5g:   $([ -f $D5G/applied ] && echo "on (modem msim_plmns:$(cat $D5G/applied))" || echo off)$([ -f $D5G/stock/global_defines.xml ] && echo "; original backed up in $D5G/stock")"
   ;;
 cleanup)
@@ -2088,6 +2205,7 @@ cleanup)
     if dual5g_restore; then say "dual5g: original modem file restored"
     else say "dual5g: COULD NOT restore the modem file; the original stays in $D5G_SD"; cp -r $D5G $D5G_SD/state 2>/dev/null; fi
   fi
+  natroam_off && say "natroam: carrier config overrides removed (national roaming shows again after the next reboot)"
   rm -f /dev/s23tweaks_efstool
   rm -f /data/adb/service.d/s23tweaks.sh
   cd /; rm -rf $V

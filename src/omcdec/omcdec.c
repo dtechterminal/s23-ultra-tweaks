@@ -2,7 +2,9 @@
  * Stock files are OMC-encoded: each byte rotated left by shifts[i % 256] and XORed with salts[i % 256],
  * over a gzip stream (SemCscFeature._decode + _decompressGzip in framework.jar; the tables below are that
  * class's). A file that's already plain (starts with '<' or '{') is printed as it is.
- *   omcdec <file>          exit 0 = printed, 1 = can't read it, 2 = not a file this can decode
+ *   omcdec <file>          decode: exit 0 = printed, 1 = can't read it, 2 = not a file this can decode
+ *   omcdec -e <file>       encode: gzip stdin-file then rotate right + XOR, so SemCscFeature reads it
+ *                          back (the exact inverse of decode); output is a real OMC file (starts 0x2f 0x27)
  * Build: aarch64-linux-android34-clang -O2 -static -s omcdec.c -lz -o omcdec */
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,9 +48,11 @@ static const unsigned char shifts[256] = {
 };
 
 int main(int argc, char **argv) {
-  if (argc != 2) { fprintf(stderr, "usage: omcdec <file>\n"); return 1; }
-  FILE *f = fopen(argv[1], "rb");
-  if (!f) { perror(argv[1]); return 1; }
+  int enc = 0, ai = 1;
+  if (argc == 3 && argv[1][0] == '-' && argv[1][1] == 'e' && !argv[1][2]) { enc = 1; ai = 2; }
+  else if (argc != 2) { fprintf(stderr, "usage: omcdec [-e] <file>\n"); return 1; }
+  FILE *f = fopen(argv[ai], "rb");
+  if (!f) { perror(argv[ai]); return 1; }
   size_t cap = 1 << 16, n = 0, r;
   unsigned char *in = malloc(cap);
   while (in && (r = fread(in + n, 1, cap - n, f)) > 0) {
@@ -57,6 +61,32 @@ int main(int argc, char **argv) {
   }
   fclose(f);
   if (!in) return 1;
+  if (enc) {
+    /* gzip the plain input, then for each byte XOR salts[i] and rotate right by shifts[i] (the inverse
+     * of decode's rotate-left-then-XOR, applied in reverse order), so SemCscFeature decodes it back. */
+    size_t ocap = n + (n >> 1) + 64, on = 0;
+    unsigned char *gz = malloc(ocap);
+    if (!gz) return 1;
+    z_stream z = {0};
+    if (deflateInit2(&z, Z_DEFAULT_COMPRESSION, Z_DEFLATED, 16 + MAX_WBITS, 8, Z_DEFAULT_STRATEGY) != Z_OK) {
+      fprintf(stderr, "deflateInit failed\n"); return 1; }
+    z.next_in = in; z.avail_in = (uInt)n;
+    int ret;
+    do {
+      if (on == ocap) { gz = realloc(gz, ocap *= 2); if (!gz) return 1; }
+      z.next_out = gz + on; z.avail_out = (uInt)(ocap - on);
+      ret = deflate(&z, Z_FINISH);
+      on = ocap - z.avail_out;
+    } while (ret != Z_STREAM_END);
+    deflateEnd(&z);
+    for (size_t i = 0; i < on; i++) {
+      unsigned s = shifts[i & 255] & 7, b = gz[i] ^ salts[i & 255];
+      if (s) b = ((b >> s) | (b << (8 - s))) & 0xff;
+      gz[i] = b;
+    }
+    fwrite(gz, 1, on, stdout);
+    return fflush(stdout) ? 1 : 0;
+  }
   if (n > 0 && (in[0] == '<' || in[0] == '{')) { fwrite(in, 1, n, stdout); return fflush(stdout) ? 1 : 0; }
   for (size_t i = 0; i < n; i++) {
     unsigned s = shifts[i & 255] & 7, b = in[i];
