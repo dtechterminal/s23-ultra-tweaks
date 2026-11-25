@@ -553,6 +553,12 @@ camfeat_apply() {
       *) nl=$(printf '%s' "$o" | sed "s|supported-mode=\"$m\"|supported-mode=\"video,$m\"|") ;;
     esac
     nl=$(printf '%s' "$nl" | sed 's|value="false"|value="true"|')
+    # stock ships seamless-zoom-support="false" on the 24 fps UHD/FHD entries, which leaves Video
+    # showing only the 1x lens; 8K stays false (the 10x is hidden there).
+    case "$n" in
+      BACK_CAMCORDER_RESOLUTION_FEATURE_MAP_3840X2160_24FPS|BACK_CAMCORDER_RESOLUTION_FEATURE_MAP_1920X1080_24FPS)
+        nl=$(printf '%s' "$nl" | sed 's|seamless-zoom-support="false"|seamless-zoom-support="true"|') ;;
+    esac
     grep -v "name=\"$n\"" $R/cf.new > $R/cf.tmp && mv $R/cf.tmp $R/cf.new
     printf '%s\n' "$nl" >> $R/cf.new
   done

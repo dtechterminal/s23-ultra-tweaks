@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Fix: 24 fps Video showed only the 1x lens** (`cam24fps`). The stock `camera-feature.xml` has `seamless-zoom-support="false"` on `BACK_CAMCORDER_RESOLUTION_FEATURE_MAP_3840X2160_24FPS` and `..._1920X1080_24FPS`, so once those entries were opened to standard Video, UHD and FHD 24 offered no 0.6x / 3x / 10x switch. The apply now sets `seamless-zoom-support="true"` on those two entries; the 8K 24 fps entry keeps `false`, so the 10x stays hidden there.
+
 ## v1.7.2
 
 - **Fix: Chromium browsers such as Vivaldi crashing on launch with `hideksu` on** ("GPU process isn't usable. Goodbye."). Some apps run their own app zygote (`<package>_zygote`) to start their sandboxed processes. It inherits Android's zygote's open files, which include the framework resource overlays, such as the `display` tweak's `/product/overlay/s23tweaks-aodbright.apk`. On every fork, zygote code reopens those files by path. Once `hidemnt` had detached the module's mounts in the app zygote's namespace, the reopen failed (`Failed open(/product/overlay/s23tweaks-aodbright.apk)`), so the sandboxed GPU and renderer processes died before they started. In an app zygote's namespace (the zygote and the sandboxed children that share it), `hidemnt` now keeps only the mounts that hold a file the app zygote has open, which is `/product/overlay` here, and detaches every other module mount. The app's own process still sees no module mounts. Seen with Vivaldi 8.3 on an S23 Ultra: it crashed on every launch, and after the fix it opens normally.
