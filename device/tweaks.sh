@@ -22,7 +22,7 @@
 #         camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein
 #         callscreen tenbit hideksu cam24fps weather wideflash
 #         prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage
-#         anamorphic profps slowmo4k120 dual5g nronly natroam  (see README.md; the categories they're grouped in are in install.sh and the WebUI)
+#         anamorphic profps slowmo4k120 dual5g nronly natroam rambler  (see README.md; the categories they're grouped in are in install.sh and the WebUI)
 #
 # Nothing here writes to a partition. Every change is a module load, an overlay, a bind mount or a
 # runtime setting, so a reboot always returns the phone to stock. The files themselves stay on storage
@@ -32,7 +32,8 @@
 # (harmless without the rest; "unflag" removes them), camextras' camera app setting, callscreen,
 # which installs Samsung Language Core as an ordinary app (undo: pm uninstall <package>), and weather,
 # which installs a 12 KB AI Core stub app and turns Samsung's live wallpaper app back on if it was off,
-# and natroam, which writes a carrier config override file in the Phone app's storage (removed on undo).
+# natroam, which writes a carrier config override file in the Phone app's storage (removed on undo),
+# and rambler, which writes Gboard's local flag override file (the original is put back on undo).
 # dual5g is the one change inside the modem: it edits one policy file in the modem's own storage (EFS),
 # which stays across reboots and module removal until it's put back. The original is backed up before
 # the first write (state folder and Download/s23tweaks-modem-backup); un-picking dual5g, removing the
@@ -48,7 +49,7 @@ mkdir -p $V; L=$V/tweaks.log; R=$V/run
 [ -f $D/module.prop ] && MODULE=1 || MODULE=0
 APPLY_LOCK=/dev/s23tweaks_apply.lock         # /dev is tmpfs: locks never survive a reboot
 STAYS_TILL_REBOOT="airdrop wifi7 battery india callrec vulkan audioeraser hdr2023 colortone tenbit galaxyai settingssearch hideksu cam24fps"
-TWEAK_IDS="airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein callscreen tenbit hideksu cam24fps weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps slowmo4k120 dual5g nronly natroam"
+TWEAK_IDS="airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser colortone galaxyai camextras autoframe settingssearch bargein callscreen tenbit hideksu cam24fps weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps slowmo4k120 dual5g nronly natroam rambler"
 GMS_MIN=261125000                            # Play services 26.11, the first with Mosey support
 # Firmware the AirDrop/Wi-Fi 7 kernel modules are checked against (one line each, read by customize.sh).
 # All are One UI 9 build GZIF on GKI kernel 34343818, and their whole Wi-Fi stack (cnss2, mhi, cfg80211,
@@ -1564,6 +1565,59 @@ natroam_off() {   # delete our override files; 0 if any was removed
   while read o; do rm -f "$o"; done < $NROAM; rm -f $NROAM
 }
 
+# rambler: Gboard's Rambler voice typing (Gemini dictation that drops filler words and takes spoken edits),
+# which Google turns on only for Pixel 10 and 11. Gboard 18.x has all of it; the server sends
+# enable_agentic_dictation=false and switches off Rambler's toolbar and motion flags elsewhere. Gboard
+# reads its flags in this order: hermetic override, its own local override store (shared_prefs/
+# flag_override.xml, the in-app flag editor's), then the server's values, so a value there wins and stays
+# until Gboard's storage is cleared. The set below is PixelBoard's (github.com/Akshayykadam/PixelBoard,
+# GboardRambler1803StockPolicy), the patched Gboard reported to bring the Pixel's Rambler to other phones.
+# Other overrides in the file are kept; the file as it was is saved once and put back on undo.
+GB_PKG=com.google.android.inputmethod.latin; GB_PREFS=/data/user/0/$GB_PKG/shared_prefs
+GB_OVR=$GB_PREFS/flag_override.xml; RB_UNDO=$V/undo/gboard_flag_override
+RB_TRUE="enable_agentic_dictation config_agentic_dictation enable_jetson_in_toolbar filter_rambler_contributed_input_view_session
+  enable_rambler_al_toolbar_overflow_menu enable_hide_rambler_al_idling_state rambler_motion_with_gradient_color
+  agentic_dictation_spot_light2 agentic_dictation_new_gi_motion enable_jetson_s3_quota_experiment_override
+  agentic_dictation_disable_pre_session_quota_check enable_pcm_audio_caching_for_offline_fallback show_rambler_dict_settings"
+RB_FALSE="enable_rambler_al_toolbar agentic_dictation_enable_proactive_parallel_asr agentic_dictation_enable_seamless_fallback"
+RB_LONG="ad_activation_type=2"
+rb_names() { echo $RB_TRUE $RB_FALSE ${RB_LONG%%=*} | tr ' ' '|'; }
+rambler_on() { grep -q 'name="enable_agentic_dictation" value="true"' $GB_OVR 2>/dev/null; }
+rambler_write() {   # $1: new file content's path; keeps an existing file's owner and label, sets them on a new one
+  am force-stop $GB_PKG   # Gboard reads the overrides when it starts; Android restarts the keyboard right away
+  if [ -f $GB_OVR ]; then cat "$1" > $GB_OVR
+  else
+    cp "$1" $GB_OVR; chown $(stat -c %u:%g $GB_PREFS) $GB_OVR; chmod 660 $GB_OVR
+    chcon $(ls -Zd $GB_PREFS | awk '{print $1}') $GB_OVR
+  fi
+}
+rambler_apply() {
+  # Gboard's storage is locked until the first unlock after a boot; the file from the last apply stays in effect
+  [ -d $GB_PREFS ] || { log "rambler: Gboard's storage isn't readable yet (locked until the first unlock, or Gboard was never opened); open Gboard once and apply again"; return 1; }
+  mkdir -p $R $V/undo
+  if [ ! -e $RB_UNDO ] && [ ! -e $RB_UNDO.absent ]; then
+    if [ -f $GB_OVR ]; then cp $GB_OVR $RB_UNDO; else : > $RB_UNDO.absent; fi
+  fi
+  { if [ -f $GB_OVR ]; then grep -vE "name=\"($(rb_names))\"|</map>" $GB_OVR
+    else echo '<?xml version="1.0" encoding="utf-8" standalone="yes" ?>'; echo '<map>'; fi
+    for k in $RB_TRUE; do echo "    <boolean name=\"$k\" value=\"true\" />"; done
+    for k in $RB_FALSE; do echo "    <boolean name=\"$k\" value=\"false\" />"; done
+    for kv in $RB_LONG; do echo "    <long name=\"${kv%%=*}\" value=\"${kv#*=}\" />"; done
+    echo '</map>'; } > $R/gboard_flags.xml
+  grep -q '<map>' $R/gboard_flags.xml || { log "rambler: Gboard's flag_override.xml has no <map>; left alone"; rm -f $R/gboard_flags.xml; return 1; }
+  if cmp -s $R/gboard_flags.xml $GB_OVR; then log "rambler: on (Gboard's flag overrides already in place)"; rm -f $R/gboard_flags.xml; return 0; fi
+  rambler_write $R/gboard_flags.xml; rm -f $R/gboard_flags.xml
+  rambler_on || { log "rambler: couldn't write Gboard's flag overrides"; return 1; }
+  log "rambler: on; pick it in Gboard settings > Voice typing > Dictation type > Rambler"
+}
+rambler_off() {   # put Gboard's flag_override.xml back as it was; 0 if it changed
+  [ -e $RB_UNDO ] || [ -e $RB_UNDO.absent ] || return 1
+  [ -d $GB_PREFS ] || return 1   # locked: try again next time
+  if [ -e $RB_UNDO.absent ]; then am force-stop $GB_PKG; rm -f $GB_OVR
+  else rambler_write $RB_UNDO; fi
+  rm -f $RB_UNDO $RB_UNDO.absent
+}
+
 # Samsung's Mobile Hotspot offers 6 GHz only when SemWifiApServiceImpl.supportWifiAp6GBasedOnCountry() says
 # so, and that wants the CSC country (ro.csc.countryiso_code) on a hard-coded list (isRegionFor6GCountry).
 # Most S23 CSCs aren't on it, though the hardware and the stock hostapd run a 6 GHz hotspot fine.
@@ -1902,6 +1956,7 @@ why_not() {
     galaxyai)
       for p in $GAI_APPS; do [ -f /system/$p/${p#*/}.apk ] || { echo "this phone has no /system/$p/${p#*/}.apk to replace"; return; }; done ;;
     settingssearch) [ -f /system/$SSI/SecSettingsIntelligence.apk ] || echo "this phone has no /system/$SSI to replace" ;;
+    rambler) pm path $GB_PKG >/dev/null 2>&1 || echo "Gboard (com.google.android.inputmethod.latin) isn't installed" ;;
     nronly)
       [ -f "$CCF" ] || { echo "can't find this phone's customer_carrier_feature.json (mdc.system.path is '$CSYS')"; return; }
       [ -f $OMCDEC ] || { echo "files/omcdec is missing"; return; }
@@ -1959,6 +2014,7 @@ is_on() {
     dual5g) [ -f $D5G/applied ] ;;
     nronly) nr_ours ;;
     natroam) natroam_on ;;
+    rambler) rambler_on ;;
     *) return 1 ;;
   esac
 }
@@ -2062,6 +2118,8 @@ $CF_PROFPS"
   else nronly_off && restart=1; fi
   if has natroam; then natroam_apply && restart=1   # the Phone app reads the override when it starts
   elif natroam_off; then log "natroam: not picked; national roaming shows as roaming again"; restart=1; fi
+  if has rambler; then rambler_apply
+  elif rambler_off; then log "rambler: not picked; Gboard's flag overrides are back as they were"; fi
   if has hotspot6g; then hotspot6g_pre && restart=1   # after india, which may set the country to IN
   elif [ "$(getprop $H6_PROP)" = 1 ]; then /data/adb/ksu/bin/resetprop $H6_PROP 0 && log "hotspot6g: not picked; 6 GHz override off"; fi
   apk_binds
@@ -2170,6 +2228,7 @@ status)
   echo "reported: model $(getprop ro.product.model), csc $(getprop ro.csc.sales_code), country $(getprop ro.csc.countryiso_code)$([ -e $V/india_identity ] && [ "$(getprop ro.product.model)" = $IN_MODEL ] && echo " (india identity on)")"
   echo "nronly:   $(nr_ours && echo "on (Network mode offers LTE only and 5G only)" || echo off)"
   echo "natroam:  $([ -s $NROAM ] && echo "on ($(grep -c . $NROAM) SIM override(s))" || echo off)"
+  echo "rambler:  $(rambler_on && echo "on (Gboard flag overrides)" || echo off)"
   echo "dual5g:   $([ -f $D5G/applied ] && echo "on (modem msim_plmns:$(cat $D5G/applied))" || echo off)$([ -f $D5G/stock/global_defines.xml ] && echo "; original backed up in $D5G/stock")"
   ;;
 cleanup)
@@ -2205,6 +2264,7 @@ cleanup)
     if dual5g_restore; then say "dual5g: original modem file restored"
     else say "dual5g: COULD NOT restore the modem file; the original stays in $D5G_SD"; cp -r $D5G $D5G_SD/state 2>/dev/null; fi
   fi
+  rambler_off && say "rambler: Gboard's flag overrides restored"
   natroam_off && say "natroam: carrier config overrides removed (national roaming shows again after the next reboot)"
   rm -f /dev/s23tweaks_efstool
   rm -f /data/adb/service.d/s23tweaks.sh

@@ -6,6 +6,7 @@ The tweaks come in six categories. The module page lets you pick a whole categor
 Each one works on any S23 Ultra on One UI 9 unless it says otherwise.
 
 **What's new** (details in the [changelog](CHANGELOG.md)):
+- **v1.8.1**: Gboard's Rambler voice typing from the Pixel 10 and 11 (`rambler`).
 - **v1.8.0**: LTE only and 5G only in Network mode for both SIMs (`nronly`), and no national-roaming R for Indian SIMs (`natroam`).
 - **v1.7.2**: fixes Chromium browsers such as Vivaldi crashing on launch with `hideksu` on ("GPU process isn't usable").
 - **v1.7.1**: fixes `wideflash` (the 0.6× flash and torch) on a camera that had been used before, where it stayed greyed out.
@@ -85,6 +86,7 @@ All twelve camera tweaks added in this fork — 24 fps (rear and front), flash o
 - 📞 **29 · Call screening** in the Phone app: screening, greeting, voice messages and the AI summary work. **Stays after a reboot** · `callscreen`
   - Works on: firmware S918WVLU8GZIF (3.1 GB download, about 7 GB free while it installs)
 - 🗣️ **30 · Bixby barge-in**: talk over Bixby while it answers. **Untested** · `bargein`
+- 🎙️ **39 · Gboard Rambler**: the Pixel 10 and 11's Gemini voice typing in Gboard, which turns natural speech into clean text, drops filler words and takes spoken edits. Gboard 18 has all of it; Google's server just keeps it off on other phones. The module sets Gboard's own local flag overrides (`shared_prefs/flag_override.xml`, which Gboard reads before the server's values), using the same flags as [PixelBoard](https://github.com/Akshayykadam/PixelBoard). Then pick it in Gboard settings → Voice typing → Dictation type → Rambler. It needs an internet connection, and Google may limit daily use. Undo: un-pick it; the file goes back as it was · `rambler`
 
 ### 🔋 Battery and settings
 

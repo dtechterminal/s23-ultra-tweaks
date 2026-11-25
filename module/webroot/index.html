@@ -388,6 +388,7 @@ const TWEAKS = [
   { id: "settingssearch", cat: "ai", name: "Settings search", desc: "The S24's new Settings search bar; natural-language answers stay off (10 MB download)" },
   { id: "callscreen", cat: "ai", name: "Call screening", desc: "Installs Samsung Language Core: screening and voice messages work, the AI summary and replies don't. Stays after a reboot (3.1 GB download; Wi-Fi recommended)" },
   { id: "bargein", cat: "ai", name: "Bixby barge-in", desc: "Talk over Bixby while it answers, as on the S24 (untested)" },
+  { id: "rambler", cat: "ai", name: "Gboard Rambler", desc: "The Pixel 10 and 11's Rambler voice typing in Gboard: Gemini turns natural speech into clean text, drops filler words and takes spoken edits (\u201cchange blue to green\u201d). Sets Gboard's own local flag overrides, the same set PixelBoard uses; needs Gboard 18 and an internet connection, and Google may limit daily use. Undo: un-pick it and apply." },
   { id: "battery", cat: "system", name: "Battery health", desc: "Settings → Battery → Battery information shows health and cycle count" },
   { id: "features", cat: "system", name: "Power schedule and louder calls", desc: "Auto power on/off schedule and louder VoIP calls" },
   { id: "hideksu", cat: "system", name: "HideKSU", desc: "Hide the KernelSU root manager from apps, so root-aware apps (CRED, banking) stop crashing. The launcher icon and DFRoot's boot root keep working (patched services.jar; needs the KernelSU manager installed; 12 MB download). Also hides the module's own mounts from the apps you list in /data/adb/s23tweaks/hide-apps.txt, so mount-scanning detectors don't see the tweaks" },
@@ -443,6 +444,7 @@ const WHERE = {
   autoframe: ["4K auto framing", "Reported to make the camera fail (S918B). Video at UHD with Auto framing on; turn it off if the camera fails to open."],
   settingssearch: ["Settings search", "Open Settings and tap the search bar."],
   callscreen: ["Call screening", "Phone → Settings → Call screening. On the S23 the AI summary shows an error; screening and voice messages work."],
+  rambler: ["Gboard Rambler", "Gboard settings → Voice typing → Dictation type → Rambler, then tap the mic on the keyboard."],
   bargein: ["Bixby barge-in", "Untested: start talking while Bixby is answering."],
   weather: ["Lock screen weather effect", "Wallpaper and style → Lock screen → Weather → Done. It animates only when the weather has rain, snow, fog or daytime sun; cloudy or clear nights show nothing."],
 };
@@ -1179,7 +1181,7 @@ function installMock() {
     return JSON.stringify({ version: "v1.1.0", module: true,
       phone: { model: "SM-S918W", firmware: "S918WVLU8GZIF", csc: "XAC", android: "17", kernel: "5.15.197-android13-8-34343818-abS918WVLU8GZIF", gms: 264531035, sim: new URLSearchParams(location.search).get("sim") || "40445" },
       picked: st.picked, autostart: st.autostart, applying: !!st.run,
-      tweaks: [tw("airdrop"), tw("battery"), tw("features"), tw("callrec"), tw("india"), tw("hotspot6g"), tw("wifi7", w7 ? "" : "needs firmware S918WVLU8GZIF (this phone runs S918WVLU7GZE1)"), tw("display"), tw("logvideo"), tw("vulkan"), tw("camerahdr"), tw("hdr2023"), tw("audioeraser"), tw("colortone"), tw("galaxyai"), tw("camextras"), tw("autoframe"), tw("settingssearch"), tw("bargein"), tw("tenbit"), tw("cam24fps"), tw("weather"), tw("wideflash"), tw("prowbtint"), tw("zoomrocker"), tw("videosoftening"), tw("afcontrol"), tw("aelimit"), tw("slowmoaf"), tw("extstorage"), tw("anamorphic"), tw("profps"), tw("slowmo4k120"), tw("callscreen", "needs the Language Core 4.0.01.24 APK (3.1 GB) in /data/adb/s23tweaks/dl/languagecore-4.0.01.24.apk; see the README"), tw("dual5g"), tw("nronly"), tw("natroam")] });
+      tweaks: [tw("airdrop"), tw("battery"), tw("features"), tw("callrec"), tw("india"), tw("hotspot6g"), tw("wifi7", w7 ? "" : "needs firmware S918WVLU8GZIF (this phone runs S918WVLU7GZE1)"), tw("display"), tw("logvideo"), tw("vulkan"), tw("camerahdr"), tw("hdr2023"), tw("audioeraser"), tw("colortone"), tw("galaxyai"), tw("camextras"), tw("autoframe"), tw("settingssearch"), tw("bargein"), tw("tenbit"), tw("cam24fps"), tw("weather"), tw("wideflash"), tw("prowbtint"), tw("zoomrocker"), tw("videosoftening"), tw("afcontrol"), tw("aelimit"), tw("slowmoaf"), tw("extstorage"), tw("anamorphic"), tw("profps"), tw("slowmo4k120"), tw("callscreen", "needs the Language Core 4.0.01.24 APK (3.1 GB) in /data/adb/s23tweaks/dl/languagecore-4.0.01.24.apk; see the README"), tw("dual5g"), tw("nronly"), tw("natroam"), tw("rambler")] });
   }
   function handle(cmd) {
     tick();
