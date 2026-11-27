@@ -87,11 +87,11 @@ lc_have=$(sh_ "dumpsys package com.samsung.android.offline.languagemodel 2>/dev/
 ids=(airdrop wifi7 hotspot6g
      logvideo camextras camerahdr hdr2023 autoframe tenbit wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps uhd60lenses
      display colortone vulkan weather
-     galaxyai highlights audioeraser settingssearch callscreen bargein
+     galaxyai highlights audioeraser fancam settingssearch callscreen bargein
      battery features hideksu wearretry
      callrec india dual5g nronly natroam
      rambler chargewatts)
-cat=(A A A B B B B B B B B B B B B B B B B B C C C C D D D D D D E E E E F F F F F D C)
+cat=(A A A B B B B B B B B B B B B B B B B B C C C C D D D D D D D E E E E F F F F F D C)
 cats=(A B C D E F)
 catname=("Connectivity" "Camera" "Display and graphics" "Galaxy AI and Samsung apps" "Battery and settings" "Carrier")
 desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Google's Mosey; 20 MB download)"
@@ -121,6 +121,7 @@ desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Googl
       "Galaxy AI apps: the S24's Now Brief, Creative Studio and Call Assist (219 MB download)"
       "Notification highlights: Galaxy AI sorts important notifications to the top of the panel and summarizes long or repeated chats, on the phone; needs a Samsung account, and summaries appear with the screen off"
       "Audio Eraser: remove wind, noise, music or voices from videos in Gallery (34 MB download)"
+      "My FanCam: Gallery > a video > AI button > My FanCam, cropping a new video around one person (needs Audio Eraser; experimental, untested)"
       "Settings search: the S24's new Settings search bar; natural-language answers stay off (10 MB download)"
       "Call screening: installs Samsung Language Core; screening, greeting, voice messages and the AI summary work; AI replies untested (persistent; 3.1 GB download)"
       "Bixby barge-in: talk over Bixby while it answers (untested)"
@@ -135,8 +136,8 @@ desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Googl
       "India: no 'R' roaming icon on national roaming (an Airtel or Jio SIM from another circle counts as home; roaming abroad still shows)"
       "Gboard Rambler: the Pixel 10/11's Gemini voice typing that drops filler words and takes spoken edits (Gboard settings > Voice typing > Dictation type > Rambler)"
       "Charging watts: the lock screen and Always On Display charging lines show the power going into the battery and what holds it back, e.g. 'Super fast charging 2.0: 63% • 10.8 W (phone warm)' (patched SystemUI, checked by MD5; AOD needs the built-in Always On Display 8.9.65.90; 9 MB download; experimental; pick it by number)")
-avail=($can_airdrop $can_airdrop 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 $can_ct 1 1 1 1 1 1 $can_lc 1 1 1 $can_ksu 1 $can_rec $can_csc 1 1 1 1 $can_cw)
-why=("$why_airdrop" "$why_airdrop" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "$why_ct" "" "" "" "" "" "" "$why_lc" "" "" "" "$why_ksu" "" "$why_rec" "$why_csc" "" "" "" "" "$why_cw")
+avail=($can_airdrop $can_airdrop 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 $can_ct 1 1 1 1 1 1 1 $can_lc 1 1 1 $can_ksu 1 $can_rec $can_csc 1 1 1 1 $can_cw)
+why=("$why_airdrop" "$why_airdrop" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "$why_ct" "" "" "" "" "" "" "" "$why_lc" "" "" "" "$why_ksu" "" "$why_rec" "$why_csc" "" "" "" "" "$why_cw")
 
 # pre-release builds lived in /data/local/tmp/s23tweaks: carry the picks and the Play services backup over
 sh_ "su -c '[ -d /data/local/tmp/s23tweaks ] && [ ! -e $PHONE_DIR/choices ] && mkdir -p $PHONE_DIR && cp -r /data/local/tmp/s23tweaks/choices /data/local/tmp/s23tweaks/backup $PHONE_DIR/ 2>/dev/null; true'" >/dev/null
@@ -199,6 +200,7 @@ if [ -z "$picked" ]; then
     add "${ids[$i]}"
   done
   case " $picked " in *" india "*) picked=$(echo "$picked" | sed 's/^callrec //; s/ callrec//') ;; esac   # india carries call recording
+  case " $picked " in *" fancam "*) case " $picked " in *" audioeraser "*) ;; *) info "My FanCam is in Gallery's Audio Eraser menu, so audioeraser is added too."; picked="audioeraser $picked" ;; esac ;; esac
   case " $picked " in *" wifi7 "*) case " $picked " in *" airdrop "*) ;; *) info "wifi7 runs on the AirDrop Wi-Fi driver, so airdrop is added too."; picked="airdrop $picked" ;; esac ;; esac
   picked=$(echo $picked)
 fi
@@ -279,6 +281,7 @@ case " $picked " in *" settingssearch "*) info "Settings search: open Settings a
 case " $picked " in *" callscreen "*) info "Call screening: Phone > Settings > Call screening. Screening, greeting, voice messages and the AI summary work (with Language Core 4.0.01.24); AI replies are untested." ;; esac
 case " $picked " in *" autoframe "*) info "4K auto framing was reported to make the camera fail (S918B); turn it off if the camera fails to open." ;; esac
 case " $picked " in *" weather "*) info "Weather effect: Wallpaper and style > Lock screen > Weather > Done. It animates only for rain, snow, fog or daytime sun." ;; esac
+case " $picked " in *" fancam "*) info "My FanCam (experimental): Gallery > open a video > AI button > My FanCam. Untested on the S23; tell us on GitHub issue #48 whether it works." ;; esac
 case " $picked " in *" bargein "*) info "Bixby barge-in is untested; turn it off if anything misbehaves." ;; esac
 case " $picked " in *" hotspot6g "*) info "6 GHz hotspot: Settings > Connections > Mobile Hotspot > Band > 6 GHz (security must be WPA3)." ;; esac
 case " $picked " in *" dual5g "*) info "Dual SIM 5G: the modem restarts once (~15 s without signal). Original modem file: Download/s23tweaks-modem-backup. Undo: un-pick it and apply." ;; esac

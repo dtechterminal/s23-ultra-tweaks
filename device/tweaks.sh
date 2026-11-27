@@ -21,7 +21,7 @@
 #   wifi7page         open Samsung's hidden "Wi-Fi 7 mode" settings page (Wi-Fi Labs)
 #   loop | guard      (internal) keep mosey_server running / reboot cleanly on a Wi-Fi firmware crash
 # Tweaks: airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan
-#         camerahdr hdr2023 audioeraser colortone galaxyai highlights camextras autoframe settingssearch bargein
+#         camerahdr hdr2023 audioeraser fancam colortone galaxyai highlights camextras autoframe settingssearch bargein
 #         callscreen tenbit hideksu weather wideflash
 #         prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage
 #         anamorphic profps uhd60lenses dual5g nronly natroam rambler wearretry chargewatts  (see README.md; the categories they're grouped in are in install.sh and the WebUI)
@@ -51,7 +51,7 @@ mkdir -p $V; L=$V/tweaks.log; R=$V/run
 [ -f $D/module.prop ] && MODULE=1 || MODULE=0
 APPLY_LOCK=/dev/s23tweaks_apply.lock         # /dev is tmpfs: locks never survive a reboot
 STAYS_TILL_REBOOT="airdrop wifi7 battery india callrec vulkan audioeraser hdr2023 colortone highlights tenbit galaxyai settingssearch hideksu profps"
-TWEAK_IDS="airdrop battery features wearretry callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser colortone galaxyai highlights camextras autoframe settingssearch bargein callscreen tenbit hideksu weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps uhd60lenses dual5g nronly natroam rambler chargewatts"
+TWEAK_IDS="airdrop battery features wearretry callrec india hotspot6g wifi7 display logvideo vulkan camerahdr hdr2023 audioeraser fancam colortone galaxyai highlights camextras autoframe settingssearch bargein callscreen tenbit hideksu weather wideflash prowbtint zoomrocker videosoftening afcontrol aelimit slowmoaf extstorage anamorphic profps uhd60lenses dual5g nronly natroam rambler chargewatts"
 GMS_MIN=261125000                            # Play services 26.11, the first with Mosey support
 # Firmware the AirDrop/Wi-Fi 7 kernel modules are checked against (one line each, read by customize.sh).
 # All are One UI 9 build GZIF on GKI kernel 34343818, and their whole Wi-Fi stack (cnss2, mhi, cfg80211,
@@ -2669,6 +2669,7 @@ is_on() {
         else true; fi; } ;;
     uhd60lenses) bound $CF && grep -q 'name="BACK_CAMCORDER_RESOLUTION_FEATURE_MAP_3840X2160_60FPS".*seamless-zoom-support="true"' $CF 2>/dev/null ;;
     autoframe) grep -q "<SEC_FLOATING_FEATURE_CAMERA_CONFIG_AUTOFRAMING>uhd<" $FF 2>/dev/null ;;
+    fancam) grep -q "<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<" $FF 2>/dev/null ;;
     bargein) grep -q "<SEC_FLOATING_FEATURE_BIXBY_CONFIG_BARGEIN_PARAM_MODE>2<" $FF 2>/dev/null ;;
     wearretry) wr_live ;;
     weather) grep -q "<SEC_FLOATING_FEATURE_$WX_KEY>[^<]*GENWEATHER" $FF 2>/dev/null && pm path $WX_PKG >/dev/null 2>&1 && ! wx_live_off ;;
@@ -2714,6 +2715,11 @@ apply)
     w=$(why_not $x); if [ -n "$w" ]; then log "$x: skipped: $w"; else keep="$keep $x"; fi
   done
   TWEAKS=" $keep "
+  if has fancam && ! has audioeraser; then
+    keep=$(echo " $keep " | sed 's/ fancam / /g; s/^ //; s/ $//')
+    TWEAKS=" $keep "
+    log "fancam: skipped: needs audioeraser (My FanCam sits in Gallery's Audio Eraser menu)"
+  fi
   if has wifi7 && ! has airdrop; then
     keep=$(echo "$keep" | sed 's/ wifi7//g; s/^wifi7 //; s/^wifi7$//')
     TWEAKS=" $keep "
@@ -2793,6 +2799,16 @@ $CF_PROFPS"
   elif bound $HL_LIB || bound $HA_LIB || bound $HL2_LIB || bound $HA2_LIB; then
     if tb_restart hl_unbind; then log "camextras: not picked; stock EIS back"
     else log "camextras: not picked; took the levelling copies off, but the camera driver didn't stay up afterwards"; fi
+  fi
+  # My FanCam (experimental, untested): Gallery 16 (One UI 9) offers it, in the Audio Eraser menu of a
+  # video (AI button > My FanCam), when SUPPORT_VIDEO_REFRAME holds: One UI 9,
+  # MMFW_SUPPORT_TARGET_TRACKING and COMMON_CONFIG_AI_VERSION >= 20263 (Features$354 in Gallery
+  # 16.0.00.36). The reframing itself is the video editor's (vepreload's "video_assist"); whether the
+  # S23's does it is what this tests.
+  if has fancam; then
+    ff_set MMFW_SUPPORT_TARGET_TRACKING TRUE
+    case "$ff_kv" in *"COMMON_CONFIG_AI_VERSION="*) ;; *) ff_set COMMON_CONFIG_AI_VERSION 20263 ;; esac
+    log "fancam: Gallery > a video > AI button > My FanCam (experimental, untested)"
   fi
   # Bixby barge-in (untested): talk over Bixby while it answers, as on the S24
   has bargein && ff_set BIXBY_CONFIG_BARGEIN_PARAM_MODE 2
@@ -2923,6 +2939,7 @@ status)
   echo "logvideo: $(is_on logvideo && echo on || echo off), Gallery LUTs $(bound $LV && echo on || echo off), low-light Log fix $(bound $LV_LIB && echo on || echo off)"
   echo "camextras: horizon lock $(is_on camextras && echo on || echo off), levelling $(bound $HL_LIB && echo "on ($(hl_desc))" || echo off), Director's view $(grep -q '<string name="directors_view_mode">1</string>' $CAM_PREFS 2>/dev/null && echo shown || echo hidden)"
   echo "autoframe: $(grep -o '<SEC_FLOATING_FEATURE_CAMERA_CONFIG_AUTOFRAMING>[^<]*' $FF | cut -d'>' -f2 | grep . || echo stock)"
+  echo "fancam:   $(grep -q '<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<' $FF && echo on || echo off)"
   echo "bargein:  $(grep -q '<SEC_FLOATING_FEATURE_BIXBY_CONFIG_BARGEIN_PARAM_MODE>2<' $FF && echo on || echo off)"
   echo "wearretry: $(wr_live && echo "on (OFF retry strategy honoured)" || echo off)"
   echo "weather:  flag $(grep -q "<SEC_FLOATING_FEATURE_$WX_KEY>[^<]*GENWEATHER" $FF && echo on || echo off), AI Core $(wx_stub && echo "stub $(wx_code)" || { wx_real && echo "Samsung $(dumpsys package $WX_PKG 2>/dev/null | grep -m1 -oE 'versionName=[^ ]+' | cut -d= -f2) at $(pm path $WX_PKG 2>/dev/null | head -1 | cut -d: -f2)" || echo none; }), live wallpaper app $(wx_live_off && echo disabled || echo enabled)"
