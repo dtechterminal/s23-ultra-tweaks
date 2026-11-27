@@ -388,7 +388,7 @@ const TWEAKS = [
   { id: "galaxyai", cat: "ai", name: "Now Brief, Creative Studio, Call Assist", desc: "The S24's newer builds of these three Galaxy AI apps (219 MB download)" },
   { id: "highlights", cat: "ai", name: "Notification highlights", desc: "Galaxy AI sorts important notifications to the top of the panel and summarizes long or repeated chats, on the phone. It also reveals the page (Settings > Notifications > Advanced settings > Notification highlights) that this build hides, so you can see both switches; summaries need a Samsung account, Language Core and one of the listed messaging apps, and appear while the screen is off." },
   { id: "audioeraser", cat: "ai", name: "Audio Eraser", desc: "Remove wind, noise, music or voices from videos in Gallery (34 MB download)" },
-  { id: "fancam", cat: "ai", name: "My FanCam", desc: "Gallery's My FanCam: pick one person in a video and Gallery makes a new video cropped around them (Gallery → a video → AI button → My FanCam). Experimental and untested on the S23: it switches on Gallery 16's check, but the reframing is done by Samsung's video editor, which may not do it here. Needs Audio Eraser." },
+  { id: "fancam", cat: "ai", name: "My FanCam", desc: "Gallery's My FanCam: pick one person in a video and Gallery makes a new video cropped around them (Gallery → a video → the Audio Eraser entry, which becomes “My FanCam and Audio Eraser”). Experimental and untested on the S23: it switches on Gallery 16's check, but the reframing is done by Samsung's video editor, which may not do it here. Needs Audio Eraser." },
   { id: "settingssearch", cat: "ai", name: "Settings search", desc: "The S24's new Settings search bar; natural-language answers stay off (10 MB download)" },
   { id: "callscreen", cat: "ai", name: "Call screening", desc: "Installs Samsung Language Core: screening, greeting, voice messages and the AI summary work; AI replies are untested. Stays after a reboot (3.1 GB download; Wi-Fi recommended)" },
   { id: "bargein", cat: "ai", name: "Bixby barge-in", desc: "Talk over Bixby while it answers, as on the S24 (untested)" },
@@ -451,7 +451,7 @@ const WHERE = {
   settingssearch: ["Settings search", "Open Settings and tap the search bar."],
   callscreen: ["Call screening", "Phone → Settings → Call screening. Screening, greeting, voice messages and the AI summary work (with Language Core 4.0.01.24); AI replies are untested."],
   rambler: ["Gboard Rambler", "Gboard settings → Voice typing → Dictation type → Rambler, then tap the mic on the keyboard."],
-  fancam: ["My FanCam", "Gallery → open a video → AI button → My FanCam. Experimental: if it's missing or fails, tell us on GitHub issue #48."],
+  fancam: ["My FanCam", "Gallery → a video → the Audio Eraser entry, which becomes “My FanCam and Audio Eraser”; tap it for the video editor's My FanCam. Experimental: if it's missing or fails, tell us on GitHub issue #48."],
   bargein: ["Bixby barge-in", "Untested: start talking while Bixby is answering."],
   wearretry: ["Watch battery fix", "Untested: nothing to do. If the watch stops reconnecting after it's been away, unpick this."],
   weather: ["Lock screen weather effect", "Wallpaper and style → Lock screen → Weather → Done. It animates only when the weather has rain, snow, fog or daytime sun; cloudy or clear nights show nothing."],
@@ -1174,7 +1174,7 @@ function installMock() {
     if (has("camerahdr")) add(0.3, "camerahdr: One UI 6 multi-frame HDR and low-light HDR on");
     if (has("hdr2023")) add(0.2, "hdr2023: 2023 ArcSoft hybrid HDR and bracketed HDR on");
     if (has("audioeraser")) add(0.5, "audioeraser: S24 video editor engine, sound-separation libraries and models on");
-    if (has("fancam")) add(0.1, "fancam: Gallery > a video > AI button > My FanCam (experimental, untested)");
+    if (has("fancam")) add(0.1, "fancam: Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser' (experimental, untested)");
     if (has("colortone")) add(0.6, "colortone: Adaptive color tone on (Settings > Display)");
     if (has("galaxyai")) add(0.4, "galaxyai: S24 Now Brief (Personal Data Intelligence), Creative Studio and Call Assist on");
     if (has("tenbit")) add(1.2, "tenbit: front cameras offer 10-bit HDR (HLG10) video to apps");

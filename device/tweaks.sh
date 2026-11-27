@@ -2801,14 +2801,15 @@ $CF_PROFPS"
     else log "camextras: not picked; took the levelling copies off, but the camera driver didn't stay up afterwards"; fi
   fi
   # My FanCam (experimental, untested): Gallery 16 (One UI 9) offers it, in the Audio Eraser menu of a
-  # video (AI button > My FanCam), when SUPPORT_VIDEO_REFRAME holds: One UI 9,
+  # video (the entry is renamed "My FanCam and Audio Eraser" and opens vepreload with direct_launch
+  # video_assist), when SUPPORT_VIDEO_REFRAME holds: One UI 9,
   # MMFW_SUPPORT_TARGET_TRACKING and COMMON_CONFIG_AI_VERSION >= 20263 (Features$354 in Gallery
   # 16.0.00.36). The reframing itself is the video editor's (vepreload's "video_assist"); whether the
   # S23's does it is what this tests.
   if has fancam; then
     ff_set MMFW_SUPPORT_TARGET_TRACKING TRUE
     case "$ff_kv" in *"COMMON_CONFIG_AI_VERSION="*) ;; *) ff_set COMMON_CONFIG_AI_VERSION 20263 ;; esac
-    log "fancam: Gallery > a video > AI button > My FanCam (experimental, untested)"
+    log "fancam: Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser' (experimental, untested)"
   fi
   # Bixby barge-in (untested): talk over Bixby while it answers, as on the S24
   has bargein && ff_set BIXBY_CONFIG_BARGEIN_PARAM_MODE 2

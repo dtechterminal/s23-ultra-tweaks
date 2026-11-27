@@ -121,7 +121,7 @@ desc=("AirDrop: Quick Share > Share with Apple devices (S24 Wi-Fi driver + Googl
       "Galaxy AI apps: the S24's Now Brief, Creative Studio and Call Assist (219 MB download)"
       "Notification highlights: Galaxy AI sorts important notifications to the top of the panel and summarizes long or repeated chats, on the phone; needs a Samsung account, and summaries appear with the screen off"
       "Audio Eraser: remove wind, noise, music or voices from videos in Gallery (34 MB download)"
-      "My FanCam: Gallery > a video > AI button > My FanCam, cropping a new video around one person (needs Audio Eraser; experimental, untested)"
+      "My FanCam: Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser', cropping a new video around one person (needs Audio Eraser; experimental, untested)"
       "Settings search: the S24's new Settings search bar; natural-language answers stay off (10 MB download)"
       "Call screening: installs Samsung Language Core; screening, greeting, voice messages and the AI summary work; AI replies untested (persistent; 3.1 GB download)"
       "Bixby barge-in: talk over Bixby while it answers (untested)"
@@ -281,7 +281,7 @@ case " $picked " in *" settingssearch "*) info "Settings search: open Settings a
 case " $picked " in *" callscreen "*) info "Call screening: Phone > Settings > Call screening. Screening, greeting, voice messages and the AI summary work (with Language Core 4.0.01.24); AI replies are untested." ;; esac
 case " $picked " in *" autoframe "*) info "4K auto framing was reported to make the camera fail (S918B); turn it off if the camera fails to open." ;; esac
 case " $picked " in *" weather "*) info "Weather effect: Wallpaper and style > Lock screen > Weather > Done. It animates only for rain, snow, fog or daytime sun." ;; esac
-case " $picked " in *" fancam "*) info "My FanCam (experimental): Gallery > open a video > AI button > My FanCam. Untested on the S23; tell us on GitHub issue #48 whether it works." ;; esac
+case " $picked " in *" fancam "*) info "My FanCam (experimental): Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser'. Untested on the S23; tell us on GitHub issue #48 whether it works." ;; esac
 case " $picked " in *" bargein "*) info "Bixby barge-in is untested; turn it off if anything misbehaves." ;; esac
 case " $picked " in *" hotspot6g "*) info "6 GHz hotspot: Settings > Connections > Mobile Hotspot > Band > 6 GHz (security must be WPA3)." ;; esac
 case " $picked " in *" dual5g "*) info "Dual SIM 5G: the modem restarts once (~15 s without signal). Original modem file: Download/s23tweaks-modem-backup. Undo: un-pick it and apply." ;; esac
