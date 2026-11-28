@@ -718,11 +718,13 @@ gms_bcast_flag() {
 # Mosey asks mosey_server whether the Wi-Fi chip can hop between the AirDrop channel and the router's, and if
 # so it keeps Wi-Fi connected instead of "Disconnect Wi-Fi because STA and mosey are running on the same band"
 # (issue #42). The S23's daemon reports hw_channel_hopping_supported: Some(true). Mosey reads its flags only from
-# Play services' newer store, which can't be patched (names hashed), so the override goes in the database and
-# Mosey's snapshots are moved aside for Play services to rebuild. Older Mosey builds ignore the flag.
+# Play services' newer store, which can't be patched (names hashed), so the override goes in the database only.
+# Don't move Mosey's snapshots aside: Play services never rebuilds them, and Mosey then logs "Unable to retrieve
+# flag snapshot ... using defaults" and runs with every flag at its default (seen 2026-11-28, Mosey 1.0.980159239).
+# The override is not in effect yet (5 GHz still disconnects). Older Mosey builds ignore the flag.
 MOSEY_CFG='mosey_app_android#com.google.android.mosey'; MOSEY_HOP=45768305
 mosey_newstore() {
-  grep -rlaF " $MOSEY_CFG " --include='*.pb' /data/data/com.google.android.gms/app_phenotype_shared \
+  grep -rlaF " $MOSEY_CFG " --include="*.pb$1" /data/data/com.google.android.gms/app_phenotype_shared \
     /data/user_de/0/com.google.android.gms/app_phenotype_shared 2>/dev/null |
     while read -r f; do
       [ "$(head -c 120 "$f" | grep -aoE ' [A-Za-z0-9_.#]+ -?[0-9]+' | head -1 | cut -d' ' -f2)" = "$MOSEY_CFG" ] && echo "$f"
@@ -744,8 +746,9 @@ mosey_hop_flag() {
   [ "$ok" = ok ] || { log "airdrop: Play services database check failed ($ok); Wi-Fi channel hopping not set"; rm -rf $W; return; }
   am force-stop com.google.android.gms; am force-stop com.google.android.mosey
   cat $W/p.db > $DB && rm -f $DB-wal $DB-shm
-  ns=0; for f in $(mosey_newstore); do mv -f "$f" "$f.s23off" && ns=$((ns + 1)); done
-  log "airdrop: Mosey Wi-Fi channel hopping flag on (keeps Wi-Fi on 5 GHz during AirDrop with Mosey 1.0.980159239+; $ns snapshot(s) moved aside)"
+  # put back snapshots that v1.8.15-airdropfix moved aside
+  ns=0; for f in $(mosey_newstore .s23off); do mv -f "$f" "${f%.s23off}" && ns=$((ns + 1)); done
+  log "airdrop: Mosey Wi-Fi channel hopping override set in Play services' database (not in effect yet; $ns moved-aside snapshot(s) restored)"
   rm -rf $W
 }
 
