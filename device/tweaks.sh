@@ -109,6 +109,7 @@ hideksu:c438dd27a76486855d01e74379e13b5d hideksu-c438dd27.tar.gz 0b3f9991d5cb3e4
 camerahdr camerahdr-S918WVLU8GZIF.tar.gz ed4d9be902918d1d014b91d3fd53cec42512f58744a398ec4e0888be04116bcc
 hdr2023 hdr2023-S918WVLU8GZIF.tar.gz 0f31937af2f04e2edcf1a2319298dfb97e3493aea558be6f3e0070fdb9b37eba
 audioeraser audioeraser-S918WVLU8GZIF.tar.gz a11d2868b3d8ba0121554ea2a31bb65256e0c141c6033c4e6ddb4770f4d11704
+fancam fancam-S928BXXS6EZK1.tar.gz a3738f045cc3e0a6f1ecff90d07e1a9530168a169b85dc3b493482e8e101bc18
 colortone colortone-S918WVLU8GZIF.tar.gz 4be28f16e3631f1e377ecec9ad2b5b78d1abf8c6a9b971435c7ac12604f75e40
 galaxyai galaxyai-S918WVLU8GZIF.tar.gz 5619aaee7580b985df300dcfca1fadc56bc774f60ebb2af9db975876dfe01c0e
 settingssearch settingssearch-S918WVLU8GZIF.tar.gz bddfa32a08def256b7497730a0e7faecf7b1621655ce0cc85bec423843357042
@@ -1527,6 +1528,19 @@ hl_desc() {
 AE_LIBS="libsbs.so libtensorflowlite_gpu_delegate.so libmultisourceseparator.so libmultisourceseparator.audio.samsung.so"
 AE_ETC="public.libraries-audio.samsung.txt mss_v0.23.0_VMWO_2_fp32.sorione fastScanner.tflite"
 VE=libveframework.videoeditor.samsung.so
+# My FanCam's person finder (#48): the video editor's ContextAnalyzer dlopens /system/lib64/libmediacontextanalyzer.so,
+# which the S23 lacks ("start failed err -2"), and then runs a stand-in that never finds anyone. The S24 Ultra's
+# copy (S928BXXS6EZK1) needs two more S24 libraries and loads its five SNPE models by these names from
+# /system/etc/mediacontextanalyzer/ (symlinks on the S24, plain files here), through Samsung's SNAP service.
+# The models are built for the S24's SM8650; whether the S23's SNAP runs them is what this tests.
+FC_LIBS="libmediacontextanalyzer.so libvideo-highlight-arm64-v8a.so libauto-reframing-arm64-v8a.so"
+FC_MODELS="Detection.dlc Pose.dlc Keyword.dlc Locator.dlc Reid.dlc"
+fancam_stage() {
+  pl_check fancam $FC_LIBS $FC_MODELS || return 1
+  for f in $FC_LIBS; do stage lib64 $PL/fancam/$f; done
+  for f in $FC_MODELS; do stage etc/mediacontextanalyzer $PL/fancam/$f; done
+  return 0
+}
 audioeraser_stage() {
   pl_check audioeraser $AE_LIBS $AE_ETC $VE || return 1
   ff_set AUDIO_CONFIG_MULTISOURCE_SEPARATOR '{FastScanning_6, SourceSeparator_4, Version_1.3.0}'
@@ -1841,6 +1855,7 @@ payload_apply() {
   has camerahdr && camerahdr_stage && ran=0
   has hdr2023 && hdr2023_check && { ran=0; h23=1; }
   has audioeraser && audioeraser_stage && { ran=0; ae=1; }
+  has fancam && fancam_stage && ran=0
   has colortone && colortone_stage && { ran=0; ct=1; }
   has highlights && { ran=0; nh=1; }
   has galaxyai && galaxyai_stage && { ran=0; gai=1; }
@@ -2669,7 +2684,7 @@ is_on() {
         else true; fi; } ;;
     uhd60lenses) bound $CF && grep -q 'name="BACK_CAMCORDER_RESOLUTION_FEATURE_MAP_3840X2160_60FPS".*seamless-zoom-support="true"' $CF 2>/dev/null ;;
     autoframe) grep -q "<SEC_FLOATING_FEATURE_CAMERA_CONFIG_AUTOFRAMING>uhd<" $FF 2>/dev/null ;;
-    fancam) grep -q "<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<" $FF 2>/dev/null ;;
+    fancam) grep -q "<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<" $FF 2>/dev/null && [ -e /system/lib64/libmediacontextanalyzer.so ] ;;
     bargein) grep -q "<SEC_FLOATING_FEATURE_BIXBY_CONFIG_BARGEIN_PARAM_MODE>2<" $FF 2>/dev/null ;;
     wearretry) wr_live ;;
     weather) grep -q "<SEC_FLOATING_FEATURE_$WX_KEY>[^<]*GENWEATHER" $FF 2>/dev/null && pm path $WX_PKG >/dev/null 2>&1 && ! wx_live_off ;;
@@ -2809,7 +2824,7 @@ $CF_PROFPS"
   if has fancam; then
     ff_set MMFW_SUPPORT_TARGET_TRACKING TRUE
     case "$ff_kv" in *"COMMON_CONFIG_AI_VERSION="*) ;; *) ff_set COMMON_CONFIG_AI_VERSION 20263 ;; esac
-    log "fancam: Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser' (experimental, untested)"
+    log "fancam: Gallery > a video > the Audio Eraser entry, now 'My FanCam and Audio Eraser'; person finder from the S24 $([ -e /system/lib64/libmediacontextanalyzer.so ] && echo in place || echo missing) (experimental, untested)"
   fi
   # Bixby barge-in (untested): talk over Bixby while it answers, as on the S24
   has bargein && ff_set BIXBY_CONFIG_BARGEIN_PARAM_MODE 2
@@ -2940,7 +2955,7 @@ status)
   echo "logvideo: $(is_on logvideo && echo on || echo off), Gallery LUTs $(bound $LV && echo on || echo off), low-light Log fix $(bound $LV_LIB && echo on || echo off)"
   echo "camextras: horizon lock $(is_on camextras && echo on || echo off), levelling $(bound $HL_LIB && echo "on ($(hl_desc))" || echo off), Director's view $(grep -q '<string name="directors_view_mode">1</string>' $CAM_PREFS 2>/dev/null && echo shown || echo hidden)"
   echo "autoframe: $(grep -o '<SEC_FLOATING_FEATURE_CAMERA_CONFIG_AUTOFRAMING>[^<]*' $FF | cut -d'>' -f2 | grep . || echo stock)"
-  echo "fancam:   $(grep -q '<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<' $FF && echo on || echo off)"
+  echo "fancam:   Gallery switch $(grep -q '<SEC_FLOATING_FEATURE_MMFW_SUPPORT_TARGET_TRACKING>TRUE<' $FF && echo on || echo off), person finder $([ -e /system/lib64/libmediacontextanalyzer.so ] && echo "in place ($(ls /system/etc/mediacontextanalyzer 2>/dev/null | wc -l) models)" || echo missing)"
   echo "bargein:  $(grep -q '<SEC_FLOATING_FEATURE_BIXBY_CONFIG_BARGEIN_PARAM_MODE>2<' $FF && echo on || echo off)"
   echo "wearretry: $(wr_live && echo "on (OFF retry strategy honoured)" || echo off)"
   echo "weather:  flag $(grep -q "<SEC_FLOATING_FEATURE_$WX_KEY>[^<]*GENWEATHER" $FF && echo on || echo off), AI Core $(wx_stub && echo "stub $(wx_code)" || { wx_real && echo "Samsung $(dumpsys package $WX_PKG 2>/dev/null | grep -m1 -oE 'versionName=[^ ]+' | cut -d= -f2) at $(pm path $WX_PKG 2>/dev/null | head -1 | cut -d: -f2)" || echo none; }), live wallpaper app $(wx_live_off && echo disabled || echo enabled)"
