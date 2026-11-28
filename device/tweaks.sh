@@ -569,7 +569,7 @@ airdrop_post() {
   mosey_keep_mounts
   gms_flags
   gms_bcast_flag
-  mosey_hop_flag
+  # mosey_hop_flag: not called until its override reaches Mosey (see the function)
 }
 
 # --- bytes for the allowlist flag: protobuf field 1 (string), repeated; built with printf octal escapes ---
@@ -721,7 +721,8 @@ gms_bcast_flag() {
 # Play services' newer store, which can't be patched (names hashed), so the override goes in the database only.
 # Don't move Mosey's snapshots aside: Play services never rebuilds them, and Mosey then logs "Unable to retrieve
 # flag snapshot ... using defaults" and runs with every flag at its default (seen 2026-11-28, Mosey 1.0.980159239).
-# The override is not in effect yet (5 GHz still disconnects). Older Mosey builds ignore the flag.
+# The override is not in effect yet (5 GHz still disconnects), so airdrop_post doesn't call this; kept for the
+# follow-up. Older Mosey builds ignore the flag.
 MOSEY_CFG='mosey_app_android#com.google.android.mosey'; MOSEY_HOP=45768305
 mosey_newstore() {
   grep -rlaF " $MOSEY_CFG " --include="*.pb$1" /data/data/com.google.android.gms/app_phenotype_shared \
@@ -2971,14 +2972,17 @@ moseyheal)
   # Mosey app does. ip monitor waits on netlink link events (no polling). On a mosey0 change, look 3 s
   # later: stuck means an Aware network while mosey0 is gone, or two of them (the old one still owning
   # mosey0 next to the new one that can't get it). Then ignore events for 30 s: stopping Mosey deletes
-  # mosey0 again, which must not trigger another stop.
+  # mosey0 again, which must not trigger another stop. After a normal share (2026-11-28) Mosey's network went
+  # away within about 1 s of mosey0, so the 3 s check doesn't stop Mosey after every share.
   while true; do
     last=0
     ip monitor link 2>/dev/null | while IFS= read -r l; do
       case "$l" in *" mosey0:"*) ;; *) continue ;; esac
       now=$(cut -d. -f1 /proc/uptime); [ $((now - last)) -lt 30 ] && continue
       sleep 3
-      n=$(dumpsys connectivity | grep -c 'NetworkAgentInfo{network{[0-9]*}.*WIFI_AWARE')
+      # count only Mosey's own Aware networks (other apps can hold one); the agent line has "Uid: <owner>"
+      mu=$(stat -c %u /data/data/com.google.android.mosey 2>/dev/null) || continue
+      n=$(dumpsys connectivity | grep 'NetworkAgentInfo{network{[0-9]*}.*WIFI_AWARE' | grep -c " Uid: $mu ")
       if ip link show mosey0 >/dev/null 2>&1; then [ "$n" -ge 2 ] || continue; else [ "$n" -ge 1 ] || continue; fi
       last=$(cut -d. -f1 /proc/uptime)
       log "airdrop: Mosey's AirDrop network outlived mosey0 ($n Aware networks): stopping Mosey"
