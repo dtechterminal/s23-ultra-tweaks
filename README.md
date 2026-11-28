@@ -186,6 +186,8 @@ adb shell su -c "sh /data/adb/modules/s23_ultra_tweaks/tweaks.sh autostart off"
 
 The S23's Wi-Fi briefly disconnects while Quick Share is looking for Apple devices. The S24 does the same.
 
+**Connect the S23 to 2.4 GHz Wi-Fi if Apple devices take a minute to appear, or sometimes never do.** On 5 GHz, Mosey drops Wi-Fi when its AirDrop link starts (`Disconnect Wi-Fi because STA and mosey are running on the same band`), Wi-Fi reconnects, and Mosey restarts the link, again and again; the phone keeps disappearing from the iPhone between restarts. Seen with the router on 5745 MHz (channel 149, the channel AWDL uses): `mosey0` was rebuilt 4 times in a minute. On 2.4 GHz (2442 MHz) there were no Wi-Fi drops, and the phone showed up and received at once.
+
 If no Apple device shows up after the first apply, Play services may not have picked up its two flags yet. On an S918B it started offering Apple devices only after being restarted some minutes later: `adb shell su -c 'am force-stop com.google.android.gms'`, then open Quick Share again.
 
 <a id="how-airdrop-works-on-an-s23"></a>
