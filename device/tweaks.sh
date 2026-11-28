@@ -249,13 +249,17 @@ nearby_newstore() {
 # its built-in 2-entry default and crashed on every incoming AirDrop share although files/phenotype/shared/
 # com.google.android.gms.pb had the list (seen with a hook on the guard: size=2, then size=5 once moved aside).
 # A header's first token is its config package; "#" joins two (com.google.android.euicc#com.google.android.gms),
-# so only an exact match counts. ~130-byte copies hold no flags and stay.
+# so only an exact match counts. ~130-byte copies hold no flags and stay. A copy Play services rebuilds after
+# the move has the allowlist (seen 2026-11-28, 26.45.31) and stays too, so apply doesn't move and restart
+# Play services again for nothing.
 gms_newstore() {
   grep -rlaF ' com.google.android.gms ' --include='*.pb' \
     /data/user_de/0/com.google.android.gms/app_phenotype_shared /data/data/com.google.android.gms/app_phenotype_shared 2>/dev/null |
     while read -r f; do
       [ "$(head -c 100 "$f" | grep -aoE ' [A-Za-z0-9_.#]+ -?[0-9]+' | head -1 | cut -d' ' -f2)" = com.google.android.gms ] || continue
-      [ "$(wc -c < "$f")" -gt 1024 ] && echo "$f"
+      [ "$(wc -c < "$f")" -gt 1024 ] || continue
+      grep -qF "$BCAST_FLAG" "$f" && grep -qF nearby.sharing.TRANSFER_UPDATE "$f" && continue
+      echo "$f"
     done
 }
 # Nearby flags in Play services' live config (the snapshot Nearby reads), not just in its database:
