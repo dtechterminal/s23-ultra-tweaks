@@ -185,13 +185,13 @@ if [ -z "$picked" ]; then
   r=$(ask "Letters/numbers separated by spaces, Enter for all available: ")
   add() { case " $picked " in *" $1 "*) ;; *) picked="$picked $1" ;; esac; }
   if [ -z "$r" ]; then
-    for i in "${!ids[@]}"; do [ "${avail[$i]}" = 1 ] && [ "${ids[$i]}" != $carrier_skip ] && [ "${ids[$i]}" != autoframe ] && [ "${ids[$i]}" != hdr2023 ] && [ "${ids[$i]}" != chargewatts ] && add "${ids[$i]}"; done
+    for i in "${!ids[@]}"; do [ "${avail[$i]}" = 1 ] && [ "${ids[$i]}" != $carrier_skip ] && [ "${ids[$i]}" != autoframe ] && [ "${ids[$i]}" != hdr2023 ] && [ "${ids[$i]}" != chargewatts ] && [ "${ids[$i]}" != fancam ] && add "${ids[$i]}"; done
   fi
   for n in $r; do
     n=$(printf '%s' "$n" | tr '[:lower:]' '[:upper:]')
     if [[ "$n" =~ ^[A-F]$ ]]; then
       for i in "${!ids[@]}"; do
-        [ "${cat[$i]}" = "$n" ] && [ "${avail[$i]}" = 1 ] && [ "${ids[$i]}" != $carrier_skip ] && [ "${ids[$i]}" != autoframe ] && [ "${ids[$i]}" != hdr2023 ] && [ "${ids[$i]}" != chargewatts ] && add "${ids[$i]}"
+        [ "${cat[$i]}" = "$n" ] && [ "${avail[$i]}" = 1 ] && [ "${ids[$i]}" != $carrier_skip ] && [ "${ids[$i]}" != autoframe ] && [ "${ids[$i]}" != hdr2023 ] && [ "${ids[$i]}" != chargewatts ] && [ "${ids[$i]}" != fancam ] && add "${ids[$i]}"
       done
       continue
     fi
@@ -208,7 +208,7 @@ fi
 say "Applying: $picked"
 case " $picked " in *" airdrop "*) info "Wi-Fi (and the hotspot) drop for ~30 s while the driver is swapped." ;; esac
 case " $picked " in *" callscreen "*) info "Call screening installs Samsung Language Core as an app update; unlike the rest, a reboot doesn't remove it." ;; esac
-case " $picked " in *" airdrop "*|*" wifi7 "*|*" camerahdr "*|*" hdr2023 "*|*" audioeraser "*|*" colortone "*|*" galaxyai "*|*" settingssearch "*|*" callscreen "*) info "The phone downloads the files of the tweaks that need them from GitHub first (needs internet; Wi-Fi recommended)." ;; esac
+case " $picked " in *" airdrop "*|*" wifi7 "*|*" camerahdr "*|*" hdr2023 "*|*" audioeraser "*|*" fancam "*|*" colortone "*|*" galaxyai "*|*" settingssearch "*|*" callscreen "*) info "The phone downloads the files of the tweaks that need them from GitHub first (needs internet; Wi-Fi recommended)." ;; esac
 info "The screen goes black for ~30 s while Android restarts its framework. Don't unplug the phone."
 r=$(ask "Continue? [Y/n] "); [[ "$r" =~ ^[Nn] ]] && exit 0
 r=$(ask "Re-apply these automatically at every boot, with no computer? [Y/n] "); [[ "$r" =~ ^[Nn] ]] && auto=off || auto=on
@@ -242,7 +242,7 @@ fi
 a shell "su -c 'sh $TW start \"$picked\"'" >/dev/null
 
 say "Applying (2-3 minutes)..."
-shown=0; end=$((SECONDS + 420)); case " $picked " in *" galaxyai "*|*" audioeraser "*|*" camerahdr "*|*" hdr2023 "*|*" settingssearch "*|*" airdrop "*) end=$((end + 900)) ;; esac   # downloads
+shown=0; end=$((SECONDS + 420)); case " $picked " in *" galaxyai "*|*" audioeraser "*|*" fancam "*|*" camerahdr "*|*" hdr2023 "*|*" settingssearch "*|*" airdrop "*) end=$((end + 900)) ;; esac   # downloads
 case " $picked " in *" callscreen "*) end=$((end + 2700)) ;; esac   # 3.1 GB download + install
 while [ $SECONDS -lt $end ]; do
   sleep 3

@@ -665,7 +665,7 @@ function initialSelection(p) {
 function simIndia() { return /^40[456]/.test(String((S.probe && S.probe.phone && S.probe.phone.sim) || "")); }
 function carrierSkip() { return simIndia() ? "callrec" : "india"; }
 // picked only on their own, never by a category tick or the default selection
-const NO_AUTO_PICK = ["autoframe", "hdr2023", "chargewatts"];
+const NO_AUTO_PICK = ["autoframe", "hdr2023", "chargewatts", "fancam"];
 function autoPick(id) { return id !== carrierSkip() && !NO_AUTO_PICK.includes(id); }
 function catIds(cat, onlyAvailable) {
   return TWEAKS.filter(t => t.cat === cat && (!onlyAvailable || (available(t.id) && autoPick(t.id)))).map(t => t.id);
