@@ -238,10 +238,10 @@ scrub() {
 # exists Play services reads it instead of files/phenotype/shared/...nearby.pb, so the overrides read
 # false and Mosey is never bound (#22). Lists those files; their header names the config package.
 nearby_newstore() {
-  for f in /data/data/com.google.android.gms/app_phenotype_shared/*/*.pb \
-           /data/user_de/0/com.google.android.gms/app_phenotype_shared/*/*.pb; do
-    [ -f "$f" ] && head -c 64 "$f" | grep -qaF 'com.google.android.gms.nearby ' && echo "$f"
-  done
+  # one grep over the files (a loop forked head and grep per file: minutes with ~3600 snapshots)
+  grep -rlaF -m1 'com.google.android.gms.nearby ' --include='*.pb' \
+    /data/data/com.google.android.gms/app_phenotype_shared /data/user_de/0/com.google.android.gms/app_phenotype_shared 2>/dev/null |
+    while read -r f; do head -c 64 "$f" | grep -qaF 'com.google.android.gms.nearby ' && echo "$f"; done
 }
 # Nearby flags in Play services' live config (the snapshot Nearby reads), not just in its database:
 # an override can sit in the database and still be missing here, which leaves Mosey unused
