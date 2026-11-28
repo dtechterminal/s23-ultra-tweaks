@@ -569,6 +569,7 @@ airdrop_post() {
   mosey_keep_mounts
   gms_flags
   gms_bcast_flag
+  mosey_hop_flag
 }
 
 # --- bytes for the allowlist flag: protobuf field 1 (string), repeated; built with printf octal escapes ---
@@ -710,6 +711,41 @@ gms_bcast_flag() {
   gp=$(pidof com.google.android.gms 2>/dev/null | cut -d' ' -f1)
   if [ $bc_ok = 1 ]; then log "airdrop: AirDrop receive allowlist final; Play services restarted after it (pid ${gp:-not running yet})"
   else log "airdrop: warning: Play services dropped the AirDrop receive allowlist when it restarted"; fi
+  rm -rf $W
+}
+
+# Mosey's own flag 45768305 (config mosey_app_android#com.google.android.mosey, Mosey 1.0.980159239+): when on,
+# Mosey asks mosey_server whether the Wi-Fi chip can hop between the AirDrop channel and the router's, and if
+# so it keeps Wi-Fi connected instead of "Disconnect Wi-Fi because STA and mosey are running on the same band"
+# (issue #42). The S23's daemon reports hw_channel_hopping_supported: Some(true). Mosey reads its flags only from
+# Play services' newer store, which can't be patched (names hashed), so the override goes in the database and
+# Mosey's snapshots are moved aside for Play services to rebuild. Older Mosey builds ignore the flag.
+MOSEY_CFG='mosey_app_android#com.google.android.mosey'; MOSEY_HOP=45768305
+mosey_newstore() {
+  grep -rlaF " $MOSEY_CFG " --include='*.pb' /data/data/com.google.android.gms/app_phenotype_shared \
+    /data/user_de/0/com.google.android.gms/app_phenotype_shared 2>/dev/null |
+    while read -r f; do
+      [ "$(head -c 120 "$f" | grep -aoE ' [A-Za-z0-9_.#]+ -?[0-9]+' | head -1 | cut -d' ' -f2)" = "$MOSEY_CFG" ] && echo "$f"
+    done
+}
+mosey_hop_flag() {
+  G=/data/data/com.google.android.gms; DB=$G/databases/phenotype.db; SQ=$AIR/sqlite3; W=$R/gms3; rm -rf $W; mkdir -p $W
+  [ -f $DB ] || return
+  am force-stop com.google.android.gms
+  cp $DB $W/p.db; [ -f $DB-wal ] && cp $DB-wal $W/p.db-wal
+  id=$($SQ $W/p.db "select config_package_id from config_packages where name='$MOSEY_CFG'")
+  [ -n "$id" ] || { log "airdrop: Play services has no Mosey config yet; Wi-Fi channel hopping not set (open Quick Share once, then apply again)"; rm -rf $W; return; }
+  ok=$($SQ $W/p.db "PRAGMA integrity_check;
+    INSERT OR IGNORE INTO flag_overrides (config_package_id, account_id, name, value, type, source) VALUES ($id, 0, '$MOSEY_HOP', 1, 2, 0);
+    INSERT OR IGNORE INTO experiment_states_to_overrides (experiment_state_id, override_id)
+      SELECT s.experiment_state_id, o.override_id FROM experiment_states s, flag_overrides o
+      WHERE s.config_package_id=$id AND o.config_package_id=$id AND o.name='$MOSEY_HOP';
+    PRAGMA wal_checkpoint(TRUNCATE);" | head -1)
+  [ "$ok" = ok ] || { log "airdrop: Play services database check failed ($ok); Wi-Fi channel hopping not set"; rm -rf $W; return; }
+  am force-stop com.google.android.gms; am force-stop com.google.android.mosey
+  cat $W/p.db > $DB && rm -f $DB-wal $DB-shm
+  ns=0; for f in $(mosey_newstore); do mv -f "$f" "$f.s23off" && ns=$((ns + 1)); done
+  log "airdrop: Mosey Wi-Fi channel hopping flag on (keeps Wi-Fi on 5 GHz during AirDrop with Mosey 1.0.980159239+; $ns snapshot(s) moved aside)"
   rm -rf $W
 }
 
