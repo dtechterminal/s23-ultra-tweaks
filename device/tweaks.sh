@@ -2604,7 +2604,9 @@ why_not() {
     videosoftening|afcontrol|aelimit) grep -q '</SecFloatingFeatureSet>' $FF 2>/dev/null || echo "this firmware's $FF can't be edited" ;;
     tenbit) [ -f $TB_LIB ] || echo "this phone has no $TB_LIB" ;;
     wearretry) [ -x $AIR/sqlite3 ] || echo "needs the AirDrop download (its sqlite3 sets the flag): pick AirDrop, apply, then pick this" ;;
-    chargewatts) [ -n "$(cw_row)" ] || echo "this phone's SystemUI (md5 $(md5 $SYSUI)) isn't one a patch was made from, checked by MD5 (so far $(echo "$CW_ROWS" | awk '$1 == "systemui" {print $5}' | tr '\n' ',' | sed 's/,$//; s/,/, /g')'s); tools/chargewatts/build.sh can make one" ;;
+    # an older version's patched SystemUI still mounted (an upgrade before a reboot) hides the stock md5; it was
+    # built for this phone's stock SystemUI and rows are only ever added, so it counts; cw_apply swaps it
+    chargewatts) [ -n "$(cw_row)" ] || cw_ours $SYSUI || echo "this phone's SystemUI (md5 $(md5 $SYSUI)) isn't one a patch was made from, checked by MD5 (so far $(echo "$CW_ROWS" | awk '$1 == "systemui" {print $5}' | tr '\n' ',' | sed 's/,$//; s/,/, /g')'s); tools/chargewatts/build.sh can make one" ;;
     hideksu)
       set -- $(hks_row); m=$(md5 $KSUJAR)
       [ -n "$1" ] && { [ "$m" = $1 ] || bound $KSUJAR; } ||

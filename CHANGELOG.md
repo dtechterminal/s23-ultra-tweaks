@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.8.16
+
+- **Fix: after updating to v1.8.15, Charging watts showed as "Not available"** (#61). The previous version's patched SystemUI was still mounted, so the check saw its MD5 instead of the stock one and found no patch for it; the apply would then skip the tweak. Charging watts' own mount now counts as available (it was made for this phone's stock SystemUI), and the apply swaps it for the new build as it already did. Updating and rebooting also worked around it.
+- The Charging watts description no longer says the Galaxy Store's Always On Display works only on the S918W.
+
 ## v1.8.15
 
 - **Fix: `chargewatts` showed nothing on the Always On Display of an S918B with the Galaxy Store's AOD 8.9.67.3** (#56). The Store update is the same file on every model, and v1.8.14 matched it on the S918B but only packed its patch into the S918W's download, so the log said `AOD-…: download missing` and only the lock screen and notification got the watts. The S918B's download now carries it too (`chargewatts-S918BXXUAGZIF-3.tar.gz`; the S918W's is `-4`).
