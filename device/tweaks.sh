@@ -20,6 +20,7 @@
 #   boot              (internal) the automatic apply at boot
 #   wifi7page         open Samsung's hidden "Wi-Fi 7 mode" settings page (Wi-Fi Labs)
 #   loop | guard      (internal) keep mosey_server running / reboot cleanly on a Wi-Fi firmware crash
+#   moseyheal         (internal) restart Mosey when its AirDrop network outlives mosey0
 # Tweaks: airdrop battery features callrec india hotspot6g wifi7 display logvideo vulkan
 #         camerahdr hdr2023 audioeraser colortone galaxyai highlights camextras autoframe settingssearch bargein
 #         callscreen tenbit hideksu weather wideflash
@@ -243,6 +244,20 @@ nearby_newstore() {
     /data/data/com.google.android.gms/app_phenotype_shared /data/user_de/0/com.google.android.gms/app_phenotype_shared 2>/dev/null |
     while read -r f; do head -c 64 "$f" | grep -qaF 'com.google.android.gms.nearby ' && echo "$f"; done
 }
+# The same newer store also holds Play services' core config (com.google.android.gms, direct-boot aware, so in
+# /data/user_de). That copy has no value for the broadcast guard's allowlist (BCAST_FLAG), so the guard used
+# its built-in 2-entry default and crashed on every incoming AirDrop share although files/phenotype/shared/
+# com.google.android.gms.pb had the list (seen with a hook on the guard: size=2, then size=5 once moved aside).
+# A header's first token is its config package; "#" joins two (com.google.android.euicc#com.google.android.gms),
+# so only an exact match counts. ~130-byte copies hold no flags and stay.
+gms_newstore() {
+  grep -rlaF ' com.google.android.gms ' --include='*.pb' \
+    /data/user_de/0/com.google.android.gms/app_phenotype_shared /data/data/com.google.android.gms/app_phenotype_shared 2>/dev/null |
+    while read -r f; do
+      [ "$(head -c 100 "$f" | grep -aoE ' [A-Za-z0-9_.#]+ -?[0-9]+' | head -1 | cut -d' ' -f2)" = com.google.android.gms ] || continue
+      [ "$(wc -c < "$f")" -gt 1024 ] && echo "$f"
+    done
+}
 # Nearby flags in Play services' live config (the snapshot Nearby reads), not just in its database:
 # an override can sit in the database and still be missing here, which leaves Mosey unused
 nearby_live() {
@@ -301,6 +316,7 @@ bcast_live() {
     else case $f in /data/user_de/*) bl_miss="${bl_miss:+$bl_miss, }device-protected" ;; *) bl_miss="${bl_miss:+$bl_miss, }data" ;; esac; fi
   done
   [ $bl_n -gt 0 ] || { echo "no Play services config file yet"; return; }
+  [ -n "$(gms_newstore)" ] && { echo "not in effect: Play services reads a newer core snapshot without it; apply again"; return; }
   if [ $bl_ok = $bl_n ]; then echo "AirDrop receive allowlist in the live config ($bl_ok of $bl_n copies)"
   elif [ $bl_ok -gt 0 ]; then echo "AirDrop receive allowlist in $bl_ok of $bl_n live config copies, missing from the $bl_miss copy; apply again"
   else echo "AirDrop receive allowlist missing from the live config; apply again"; fi
@@ -541,6 +557,7 @@ airdrop_post() {
   touch /apex/apex-info-list.xml
   running loop || (exec setsid sh $D/tweaks.sh loop </dev/null >/dev/null 2>&1) &
   running guard || (exec setsid sh $D/tweaks.sh guard </dev/null >/dev/null 2>&1) &
+  running moseyheal || (exec setsid sh $D/tweaks.sh moseyheal </dev/null >/dev/null 2>&1) &
   n=20; until service check com.google.android.moseyservice.IMoseyService/default | grep -q found; do
     n=$((n-1)); [ $n = 0 ] && fail "IMoseyService did not register"; sleep 1; done
   log "airdrop: mosey_server running"
@@ -679,6 +696,12 @@ gms_bcast_flag() {
   [ $bc_done -gt 0 ] || log "airdrop: AirDrop receive allowlist is in the database; Play services has no live config file for it yet (looked in $BCAST_SNAPS)"
   # Mosey/Quick Share restart Play services between the DB write and the snapshot write above; a process started in
   # that window keeps the OLD list in memory and still crashes on TRANSFER_UPDATE (v1.8.11: files right, crash anyway).
+  # move the newer store's core snapshot aside so the guard reads the patched list above
+  ns=0; for f in $(gms_newstore); do
+    [ -f $V/backup/core-newstore.pb ] || cp -p "$f" $V/backup/core-newstore.pb
+    mv -f "$f" "$f.s23off" && ns=$((ns + 1))
+  done
+  [ $ns = 0 ] || log "airdrop: moved Play services' newer core snapshot aside ($ns file), so the AirDrop receive allowlist applies"
   # Stop it once more now that the files are final, let it come back, and check the entry survived.
   am force-stop com.google.android.gms
   sleep 4
@@ -2897,6 +2920,31 @@ recorder)
           echo "$(date '+%m-%d %H:%M:%S') $l" >> $REC/kernel; n=$((n + 1))
           if [ $n -ge 500 ]; then n=0; [ "$(wc -c < $REC/kernel)" -gt 1048576 ] && tail -c 524288 $REC/kernel > $REC/kernel.t && mv $REC/kernel.t $REC/kernel; fi
         done; }
+    sleep 10
+  done
+  ;;
+moseyheal)
+  # Mosey's Wi-Fi Aware network outlives its interface: after a share (or just opening the share sheet)
+  # the network stays connected when mosey0 is deleted, and netd keeps the name mosey0 assigned to it.
+  # The next AirDrop session's network then can't add mosey0 ("already assigned to netId N"), has no
+  # route, and every connect fails ENETUNREACH: the iPhone still lists the phone, nothing transfers.
+  # Releasing Mosey's request doesn't help (Android keeps local networks connected); only ending the
+  # Mosey app does. ip monitor waits on netlink link events (no polling). On a mosey0 change, look 3 s
+  # later: stuck means an Aware network while mosey0 is gone, or two of them (the old one still owning
+  # mosey0 next to the new one that can't get it). Then ignore events for 30 s: stopping Mosey deletes
+  # mosey0 again, which must not trigger another stop.
+  while true; do
+    last=0
+    ip monitor link 2>/dev/null | while IFS= read -r l; do
+      case "$l" in *" mosey0:"*) ;; *) continue ;; esac
+      now=$(cut -d. -f1 /proc/uptime); [ $((now - last)) -lt 30 ] && continue
+      sleep 3
+      n=$(dumpsys connectivity | grep -c 'NetworkAgentInfo{network{[0-9]*}.*WIFI_AWARE')
+      if ip link show mosey0 >/dev/null 2>&1; then [ "$n" -ge 2 ] || continue; else [ "$n" -ge 1 ] || continue; fi
+      last=$(cut -d. -f1 /proc/uptime)
+      log "airdrop: Mosey's AirDrop network outlived mosey0 ($n Aware networks): stopping Mosey"
+      am force-stop com.google.android.mosey
+    done
     sleep 10
   done
   ;;
